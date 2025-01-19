@@ -1,11 +1,10 @@
 package com.dendrrahsrage;
 
+import com.dendrrahsrage.appstate.DefaultAppState;
 import com.jme3.app.SimpleApplication;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.shape.Box;
+import com.jme3.system.AppSettings;
+import com.simsilica.lemur.GuiGlobals;
 
 /**
  * This is the Main Class of your Game. It should boot up your game and do initial initialisation
@@ -16,19 +15,20 @@ public class DendrrahsRage extends SimpleApplication {
     public static void main(String[] args) {
         DendrrahsRage app = new DendrrahsRage();
         app.setShowSettings(false); //Settings dialog not supported on mac
+        AppSettings settings = new AppSettings(true);
+        settings.setTitle("D'endrrah's Rage");
+        settings.setWindowSize(1024, 800);
+        app.setSettings(settings);
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        Box b = new Box(1, 1, 1);
-        Geometry geom = new Geometry("Box", b);
+        GuiGlobals.initialize(this);
+        GuiGlobals.getInstance().setCursorEventsEnabled(false);
 
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Blue);
-        geom.setMaterial(mat);
-
-        rootNode.attachChild(geom);
+        getInputManager().setCursorVisible(false);
+        getStateManager().attach(new DefaultAppState(this));
     }
 
     @Override

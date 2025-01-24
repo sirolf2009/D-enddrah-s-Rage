@@ -3,14 +3,13 @@ plugins {
     id 'java'
     id "de.undercouch.download" version "5.1.0"
     id 'idea'
-    id "io.github.0ffz.github-packages" version "1.2.1" // Plugin for anonymous inclusion of artifacts hosted in github package registry
+    id "io.github.0ffz.github-packages" version "1.2.1"
+    id 'org.jetbrains.kotlin.jvm' // Plugin for anonymous inclusion of artifacts hosted in github package registry
 }
 
 description = 'DendrrahsRage application'
 
 java {
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
 }
 
 ext.jmonkeyengineVersion = '3.7.0-stable'
@@ -50,6 +49,9 @@ dependencies {
     implementation 'com.simsilica:lemur-proto:1.13.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.24.3'
     implementation 'org.apache.logging.log4j:log4j-api:2.24.3'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation("com.github.stephengold:MonkeyWrench:0.6.2")
+
 }
 
 distZip {
@@ -216,4 +218,7 @@ task fund(){
     doLast {
        java.awt.Desktop.desktop.browse "https://start.jmonkeyengine.org/#!funding=JME_DESKTOP,JME_EFFECTS,JME_TERRAIN,LEMUR,LOG4J2,JME_JBULLET".toURI()
     }
+}
+kotlin {
+    jvmToolchain(17)
 }

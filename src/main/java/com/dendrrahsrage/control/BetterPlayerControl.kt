@@ -6,13 +6,14 @@ import com.jme3.math.FastMath
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
+import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
 
 class BetterPlayerControl(
-    private val characterNode: Node,
-    private val camera: Camera,
+    val characterNode: Node,
+    val camera: CameraNode,
     private val animationComposer: AnimComposer
-) : BetterCharacterControl(0.3f, 2.5f, 8f) {
+) : BetterCharacterControl(0.3f, 1.9f, 8f) {
 
     var leftStrafe = false
     var rightStrafe = false
@@ -50,22 +51,7 @@ class BetterPlayerControl(
         }
         setWalkDirection(walkDirection)
 
-
-        // ViewDirection is local to characters physics system!
-        // The final world rotation depends on the gravity and on the state of
-        // setApplyPhysicsLocal()
-        if (leftRotate) {
-            val rotateL = Quaternion().fromAngleAxis(FastMath.PI * tpf, Vector3f.UNIT_Y)
-            rotateL.multLocal(viewDirection)
-        } else if (rightRotate) {
-            val rotateR = Quaternion().fromAngleAxis(-FastMath.PI * tpf, Vector3f.UNIT_Y)
-            rotateR.multLocal(viewDirection)
-        }
-        setViewDirection(viewDirection)
-//        fpsText.setText("Touch da ground = " + physicsCharacter.isOnGround())
-//        if (!lockView) {
-            camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
-//        }
+        camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
     }
 
 }

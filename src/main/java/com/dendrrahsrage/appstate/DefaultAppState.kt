@@ -21,7 +21,6 @@ import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.bullet.util.CollisionShapeFactory
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
-import com.jme3.input.controls.ActionListener
 import com.jme3.input.controls.KeyTrigger
 import com.jme3.input.controls.MouseButtonTrigger
 import com.jme3.light.AmbientLight
@@ -33,18 +32,11 @@ import com.jme3.math.Vector3f
 import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
 import com.jme3.scene.control.CameraControl.ControlDirection
-import com.jme3.scene.shape.Sphere
 
 class DefaultAppState(private val application: DendrrahsRage) : BulletAppState() {
     private val stateNode: Node
     private var player: PlayerControl? = null
     private var betterPlayerControl: BetterPlayerControl? = null
-
-    //Temporary vectors used on each frame.
-    //They here to avoid instantiating new vectors on each frame
-    private val camDir = Vector3f()
-    private val camLeft = Vector3f()
-    private var stone_mat: Material? = null
 
     init {
         stateNode = Node("Default state")
@@ -90,6 +82,7 @@ class DefaultAppState(private val application: DendrrahsRage) : BulletAppState()
 
     fun setupBetterPlayer() {
         val characterNode = Node("character node")
+        characterNode.setLocalTranslation(0f, 2f, 0f)
 
         val model = application.assetManager.loadModel("Models/character.glb") as Node
         characterNode.attachChild(model)
@@ -97,14 +90,16 @@ class DefaultAppState(private val application: DendrrahsRage) : BulletAppState()
         animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
         animComposer.setCurrentAction("walkForward")
 
-        betterPlayerControl = BetterPlayerControl(characterNode, application.camera, animComposer)
-        characterNode.addControl(betterPlayerControl)
-        physicsSpace.add(betterPlayerControl)
 
         application.camera.setLocation(Vector3f(10f, 6f, -5f))
         val camNode = CameraNode("CamNode", application.camera)
         camNode.setControlDir(ControlDirection.SpatialToCamera)
         camNode.setLocalTranslation(Vector3f(0f, 2f, -6f))
+
+        betterPlayerControl = BetterPlayerControl(characterNode, camNode, animComposer)
+        characterNode.addControl(betterPlayerControl)
+        physicsSpace.add(betterPlayerControl)
+
         val quat = Quaternion()
 
         // These coordinates are local, the camNode is attached to the character node!
@@ -113,8 +108,9 @@ class DefaultAppState(private val application: DendrrahsRage) : BulletAppState()
         characterNode.attachChild(camNode)
 
         // Disable by default, can be enabled via keyboard shortcut
-        camNode.isEnabled = true
         application.flyByCamera.isEnabled = false
+        camNode.isEnabled = true
+        application.inputManager.isCursorVisible = false
 
         BetterWASDMovement(betterPlayerControl!!).setupKeys(application.inputManager)
         application.rootNode.attachChild(characterNode)
@@ -184,5 +180,7 @@ class DefaultAppState(private val application: DendrrahsRage) : BulletAppState()
         super.update(tpf)
 //        player!!.update(tpf)
         betterPlayerControl?.update(tpf)
+
+        application.inputManager.isCursorVisible = false
     }
 }

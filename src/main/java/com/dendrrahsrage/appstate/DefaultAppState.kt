@@ -11,6 +11,7 @@ import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.control.PlayerControl
 import com.dendrrahsrage.gui.hud.HUD
+import com.dendrrahsrage.item.Item
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
@@ -45,6 +46,8 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
     private val stateNode: Node
     private var player: PlayerControl? = null
     private var betterPlayerControl: BetterPlayerControl? = null
+    private var hud: HUD? = null
+    var mouseCapture = true
 
     init {
         stateNode = Node("Default state")
@@ -141,15 +144,16 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         setupBetterPlayer()
 
-        HUD(application, application.getGuiNode())
+        hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
 
         val bread = Node("burger")
         bread.setLocalTranslation(10f, 0f, 10f)
         val model = application.assetManager.loadModel("Models/Kenney/Food/burger.glb") as Node
+        val item = Item(model, 1f)
         model.setLocalScale(0.5f)
         bread.attachChild(model)
         bread.addControl(RigidBodyControl(1f))
-        bread.addControl(FoodControl())
+        bread.addControl(FoodControl(item))
         application.rootNode.attachChild(bread)
         physicsSpace.add(bread)
     }
@@ -187,7 +191,7 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         camNode.isEnabled = true
         application.inputManager.isCursorVisible = false
 
-        BetterWASDMovement(betterPlayerControl!!, application.rootNode).setupKeys(application.inputManager)
+        BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this).setupKeys(application.inputManager)
         application.rootNode.attachChild(characterNode)
 
         initCrossHairs()
@@ -269,7 +273,8 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         super.update(tpf)
 //        player!!.update(tpf)
         betterPlayerControl?.update(tpf)
+        hud?.update()
 
-        application.inputManager.isCursorVisible = false
+        application.inputManager.isCursorVisible = !mouseCapture
     }
 }

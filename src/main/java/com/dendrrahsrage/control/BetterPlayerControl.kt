@@ -1,12 +1,10 @@
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.item.Inventory
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.bullet.control.BetterCharacterControl
-import com.jme3.math.FastMath
-import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
-import com.jme3.renderer.Camera
 import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
 
@@ -22,6 +20,11 @@ class BetterPlayerControl(
     var backward = false
     var leftRotate = false
     var rightRotate = false
+
+    var health = 100.0
+    var hunger = 100.0
+
+    val inventory = Inventory()
 
     override fun update(tpf: Float) {
         super.update(tpf)
@@ -51,6 +54,8 @@ class BetterPlayerControl(
         setWalkDirection(walkDirection)
 
         camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+
+        hunger -= tpf / 100
     }
 
     fun setAnimation(name: String) {

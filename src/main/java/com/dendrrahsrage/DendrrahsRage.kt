@@ -26,6 +26,9 @@ class DendrrahsRage : SimpleApplication() {
         //add render code here (if any)
     }
 
+    fun pause() { paused = true }
+    fun unpause() { paused = false }
+
     fun main() {
         val app = DendrrahsRage()
         app.isShowSettings = false //Settings dialog not supported on mac

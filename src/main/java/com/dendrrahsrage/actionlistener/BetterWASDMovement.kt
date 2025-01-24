@@ -1,7 +1,11 @@
 package com.dendrrahsrage.actionlistener
 
+import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.appstate.DefaultAppState
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
+import com.dendrrahsrage.gui.hud.InventoryView
+import com.jme3.app.Application
 import com.jme3.collision.CollisionResults
 import com.jme3.input.CameraInput
 import com.jme3.input.InputManager
@@ -16,8 +20,12 @@ import com.jme3.scene.Node
 
 class BetterWASDMovement(
     private val playerControl: BetterPlayerControl,
-    private val sceneNode: Node
+    private val sceneNode: Node,
+    private val guiNode: Node,
+    private val appState: DefaultAppState,
 ): ActionListener, AnalogListener {
+
+    var inventoryView: InventoryView? = null
 
     fun setupKeys(inputManager: InputManager) {
         inputManager.addMapping("Strafe Left",
@@ -46,11 +54,12 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_LSHIFT),
             KeyTrigger(KeyInput.KEY_RSHIFT))
         inputManager.addMapping("Pickup", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+        inputManager.addMapping("Inventory", KeyTrigger(KeyInput.KEY_TAB))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
-        inputManager.addListener(this, "Pickup")
+        inputManager.addListener(this, "Pickup", "Inventory")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -94,41 +103,37 @@ class BetterWASDMovement(
             }
         } else if (binding.equals("Pickup") && !value) {
             val results = CollisionResults()
-
-            // 2. Aim the ray from cam loc to cam direction.
             val ray = Ray(playerControl.camera.camera.getLocation(), playerControl.camera.camera.getDirection())
-
-            // 3. Collect intersections between Ray and Shootables in results list.
             sceneNode.collideWith(ray, results)
 
-            // 4. Print the results
-            println("----- Collisions? " + results.size() + "-----")
-            for (i in 0..<results.size()) {
-                // For each hit, we know distance, impact point, name of geometry.
-                val dist = results.getCollision(i).distance
-                val pt = results.getCollision(i).contactPoint
-                val hit = results.getCollision(i).geometry.name
-                println("* Collision #$i")
-                println("  You shot $hit at $pt, $dist wu away.")
-            }
-
-            // 5. Use the results (we mark the hit object)
             if (results.size() > 0) {
-                // The closest collision point is what was truly hit:
                 val closest = results.closestCollision
-                println(closest)
                 if(closest.distance < 15f) {
                     foodItem(closest.geometry.parent)?.let {
-                        println(it)
-                        it.parent.detachChild(it)
+                        val item = it.getControl(FoodControl::class.java).item
+                        if(playerControl.inventory.addItem(item)) {
+                            it.parent.detachChild(it)
+                        }
                     }
                 }
+            }
+        } else if(binding.equals("Inventory") && !value) {
+            if(inventoryView == null) {
+                inventoryView = InventoryView(playerControl.inventory)
+                inventoryView!!.setLocalTranslation(20f, 700f, 0f)
+                guiNode.attachChild(inventoryView)
+                println("Showing $inventoryView")
+                appState.mouseCapture = false
+            } else {
+                println("Hiding $inventoryView")
+                guiNode.detachChild(inventoryView)
+                inventoryView = null
+                appState.mouseCapture = true
             }
         }
     }
 
     fun foodItem(node: Node): Node? {
-        println(node)
         if(node.getControl(FoodControl::class.java) != null) {
             return node
         }
@@ -153,14 +158,18 @@ class BetterWASDMovement(
     }
 
     override fun onAnalog(name: String?, value: Float, tpf: Float) {
-        if ((name == CameraInput.FLYCAM_LEFT)) {
-            rotateCamera(value, Vector3f.UNIT_Y)
-        } else if ((name == CameraInput.FLYCAM_RIGHT)) {
-            rotateCamera(-value, Vector3f.UNIT_Y)
-        } else if ((name == CameraInput.FLYCAM_UP)) {
-            playerControl.camera.localTranslation = playerControl.camera.localTranslation.add(0f, -value * rotationSpeedY, 0f)
-        } else if ((name == CameraInput.FLYCAM_DOWN)) {
-            playerControl.camera.localTranslation = playerControl.camera.localTranslation.add(0f, value * rotationSpeedY, 0f)
+        if (appState.mouseCapture) {
+            if ((name == CameraInput.FLYCAM_LEFT)) {
+                rotateCamera(value, Vector3f.UNIT_Y)
+            } else if ((name == CameraInput.FLYCAM_RIGHT)) {
+                rotateCamera(-value, Vector3f.UNIT_Y)
+            } else if ((name == CameraInput.FLYCAM_UP)) {
+                playerControl.camera.localTranslation =
+                    playerControl.camera.localTranslation.add(0f, -value * rotationSpeedY, 0f)
+            } else if ((name == CameraInput.FLYCAM_DOWN)) {
+                playerControl.camera.localTranslation =
+                    playerControl.camera.localTranslation.add(0f, value * rotationSpeedY, 0f)
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.dendrrahsrage
 
 import com.dendrrahsrage.appstate.DefaultAppState
-import com.github.stephengold.wrench.LwjglAssetLoader
 import com.jme3.app.SimpleApplication
 import com.jme3.renderer.RenderManager
 import com.jme3.system.AppSettings
@@ -16,7 +15,7 @@ class DendrrahsRage : SimpleApplication() {
         GuiGlobals.initialize(this)
         GuiGlobals.getInstance().isCursorEventsEnabled = false
 
-        getStateManager().attach(DefaultAppState(this))
+        getStateManager().attach(DefaultAppState(this, settings))
     }
 
     override fun simpleUpdate(tpf: Float) {

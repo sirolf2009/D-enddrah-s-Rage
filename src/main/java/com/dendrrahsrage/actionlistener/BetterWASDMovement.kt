@@ -1,20 +1,22 @@
 package com.dendrrahsrage.actionlistener
 
 import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.control.FoodControl
+import com.jme3.collision.CollisionResults
 import com.jme3.input.CameraInput
 import com.jme3.input.InputManager
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
-import com.jme3.input.controls.ActionListener
-import com.jme3.input.controls.AnalogListener
-import com.jme3.input.controls.KeyTrigger
-import com.jme3.input.controls.MouseAxisTrigger
+import com.jme3.input.controls.*
 import com.jme3.math.Matrix3f
-import com.jme3.math.Quaternion
+import com.jme3.math.Ray
 import com.jme3.math.Vector3f
+import com.jme3.scene.Node
+
 
 class BetterWASDMovement(
-    private val playerControl: BetterPlayerControl
+    private val playerControl: BetterPlayerControl,
+    private val sceneNode: Node
 ): ActionListener, AnalogListener {
 
     fun setupKeys(inputManager: InputManager) {
@@ -43,10 +45,12 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_G),
             KeyTrigger(KeyInput.KEY_LSHIFT),
             KeyTrigger(KeyInput.KEY_RSHIFT))
+        inputManager.addMapping("Pickup", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
+        inputManager.addListener(this, "Pickup")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -88,7 +92,50 @@ class BetterWASDMovement(
             } else {
                 playerControl.isDucked = false
             }
+        } else if (binding.equals("Pickup") && !value) {
+            val results = CollisionResults()
+
+            // 2. Aim the ray from cam loc to cam direction.
+            val ray = Ray(playerControl.camera.camera.getLocation(), playerControl.camera.camera.getDirection())
+
+            // 3. Collect intersections between Ray and Shootables in results list.
+            sceneNode.collideWith(ray, results)
+
+            // 4. Print the results
+            println("----- Collisions? " + results.size() + "-----")
+            for (i in 0..<results.size()) {
+                // For each hit, we know distance, impact point, name of geometry.
+                val dist = results.getCollision(i).distance
+                val pt = results.getCollision(i).contactPoint
+                val hit = results.getCollision(i).geometry.name
+                println("* Collision #$i")
+                println("  You shot $hit at $pt, $dist wu away.")
+            }
+
+            // 5. Use the results (we mark the hit object)
+            if (results.size() > 0) {
+                // The closest collision point is what was truly hit:
+                val closest = results.closestCollision
+                println(closest)
+                if(closest.distance < 15f) {
+                    foodItem(closest.geometry.parent)?.let {
+                        println(it)
+                        it.parent.detachChild(it)
+                    }
+                }
+            }
         }
+    }
+
+    fun foodItem(node: Node): Node? {
+        println(node)
+        if(node.getControl(FoodControl::class.java) != null) {
+            return node
+        }
+        if(node.parent != null) {
+            return foodItem(node.parent)
+        }
+        return null
     }
 
     protected var rotationSpeedX: Float = 1f

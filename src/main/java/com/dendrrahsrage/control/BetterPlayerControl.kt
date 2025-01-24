@@ -1,6 +1,7 @@
 package com.dendrrahsrage.control
 
 import com.jme3.anim.AnimComposer
+import com.jme3.anim.tween.action.ClipAction
 import com.jme3.bullet.control.BetterCharacterControl
 import com.jme3.math.FastMath
 import com.jme3.math.Quaternion
@@ -40,18 +41,23 @@ class BetterPlayerControl(
             walkDirection.addLocal(modelLeftDir.negate().multLocal(3f))
         }
         if (forward) {
-            if(animationComposer.getCurrentAction("Default") == null) {
-                animationComposer.setCurrentAction("walkForward")
-            }
-            walkDirection.addLocal(modelForwardDir.mult(3f))
+            setAnimation("walkForward")
+            walkDirection.addLocal(modelForwardDir.mult(6f))
         } else if (backward) {
             walkDirection.addLocal(modelForwardDir.negate().multLocal(3f))
         } else {
-            animationComposer.removeCurrentAction()
+            setAnimation("idle")
         }
         setWalkDirection(walkDirection)
 
         camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+    }
+
+    fun setAnimation(name: String) {
+        val action = animationComposer.getCurrentAction("Default") as ClipAction
+        if(!action.animClip.name.equals(name)) {
+            animationComposer.setCurrentAction(name)
+        }
     }
 
 }

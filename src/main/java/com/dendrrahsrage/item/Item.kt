@@ -14,7 +14,7 @@ open class Item(
     val weight: Float,
 ) {
 
-    fun contextMenuItems(betterPlayerControl: BetterPlayerControl, inventoryView: InventoryView) = listOf(
+    open fun contextMenuItems(betterPlayerControl: BetterPlayerControl, inventoryView: InventoryView) = listOf(
         ContextMenuAction("Drop") {
             betterPlayerControl.inventory.removeItem(this)
             spawnItem(betterPlayerControl.characterNode.parent, betterPlayerControl.physicsSpace).apply {

@@ -19,7 +19,6 @@ import com.simsilica.lemur.Panel
 import com.simsilica.lemur.component.BorderLayout
 import com.simsilica.lemur.component.BorderLayout.Position
 import com.simsilica.lemur.component.QuadBackgroundComponent
-import com.simsilica.lemur.core.VersionedList
 import com.simsilica.lemur.list.DefaultCellRenderer
 
 class InventoryView(
@@ -28,6 +27,8 @@ class InventoryView(
     private val inventory: Inventory,
 ): Container(BorderLayout()) {
 
+    var contextMenu: ContextMenu? = null
+
     init {
         val dl = DirectionalLight()
         dl.color = ColorRGBA.White
@@ -35,7 +36,6 @@ class InventoryView(
         addLight(dl)
 
         addChild(Label("Inventory"), Position.North)
-
         val list = ListBox(
             inventory.items(),
             object : DefaultCellRenderer<Item>() {
@@ -48,12 +48,13 @@ class InventoryView(
                     button.clickCommands?.clear()
                     button.addClickCommands {
                         println("clicked $value")
-                        val contextMenu = ContextMenu(
+                        contextMenu?.removeFromParent()
+                        contextMenu = ContextMenu(
                             value!!.contextMenuItems(betterPlayerControl, this@InventoryView)
                         )
                         this@InventoryView.parent.attachChild(contextMenu)
                         val mouse = inputManager.cursorPosition
-                        contextMenu.setLocalTranslation(
+                        contextMenu!!.setLocalTranslation(
                             mouse.x,
                             mouse.y,
                             2f
@@ -69,6 +70,10 @@ class InventoryView(
 
         preferredSize = Vector3f(800f, 600f, 0f)
         background = QuadBackgroundComponent()
+    }
+
+    fun cleanup() {
+        contextMenu?.removeFromParent()
     }
 
 }

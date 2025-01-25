@@ -22,7 +22,7 @@ class BetterPlayerControl(
     var rightRotate = false
 
     var health = 100.0
-    var hunger = 100.0
+    var hunger = 70.0
 
     val inventory = Inventory()
 
@@ -31,9 +31,8 @@ class BetterPlayerControl(
 
         // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        val modelForwardDir: Vector3f = characterNode.getWorldRotation().mult(Vector3f.UNIT_Z)
-        val modelLeftDir: Vector3f = characterNode.getWorldRotation().mult(Vector3f.UNIT_X)
-
+        val modelForwardDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_Z)
+        val modelLeftDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_X)
 
         // WalkDirection is global!
         // You *can* make your character fly with this.

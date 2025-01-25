@@ -125,6 +125,7 @@ class BetterWASDMovement(
                 appState.mouseCapture = false
                 GuiGlobals.getInstance().isCursorEventsEnabled = true
             } else {
+                inventoryView!!.cleanup()
                 guiNode.detachChild(inventoryView)
                 inventoryView = null
                 appState.mouseCapture = true

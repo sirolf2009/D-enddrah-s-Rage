@@ -1,11 +1,9 @@
 package com.dendrrahsrage.actionlistener
 
-import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.appstate.DefaultAppState
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
-import com.dendrrahsrage.gui.hud.InventoryView
-import com.jme3.app.Application
+import com.dendrrahsrage.gui.InventoryView
 import com.jme3.collision.CollisionResults
 import com.jme3.input.CameraInput
 import com.jme3.input.InputManager
@@ -16,6 +14,7 @@ import com.jme3.math.Matrix3f
 import com.jme3.math.Ray
 import com.jme3.math.Vector3f
 import com.jme3.scene.Node
+import com.simsilica.lemur.GuiGlobals
 
 
 class BetterWASDMovement(
@@ -23,11 +22,12 @@ class BetterWASDMovement(
     private val sceneNode: Node,
     private val guiNode: Node,
     private val appState: DefaultAppState,
+    private val inputManager: InputManager
 ): ActionListener, AnalogListener {
 
     var inventoryView: InventoryView? = null
 
-    fun setupKeys(inputManager: InputManager) {
+    fun setupKeys() {
         inputManager.addMapping("Strafe Left",
             KeyTrigger(KeyInput.KEY_A),
             KeyTrigger(KeyInput.KEY_Z))
@@ -119,16 +119,16 @@ class BetterWASDMovement(
             }
         } else if(binding.equals("Inventory") && !value) {
             if(inventoryView == null) {
-                inventoryView = InventoryView(playerControl.inventory)
+                inventoryView = InventoryView(inputManager, playerControl, playerControl.inventory)
                 inventoryView!!.setLocalTranslation(20f, 700f, 0f)
                 guiNode.attachChild(inventoryView)
-                println("Showing $inventoryView")
                 appState.mouseCapture = false
+                GuiGlobals.getInstance().isCursorEventsEnabled = true
             } else {
-                println("Hiding $inventoryView")
                 guiNode.detachChild(inventoryView)
                 inventoryView = null
                 appState.mouseCapture = true
+                GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
         }
     }

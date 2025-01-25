@@ -12,6 +12,7 @@ import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.control.PlayerControl
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Item
+import com.dendrrahsrage.item.Items
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
@@ -146,16 +147,11 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
 
-        val bread = Node("burger")
-        bread.setLocalTranslation(10f, 0f, 10f)
-        val model = application.assetManager.loadModel("Models/Kenney/Food/burger.glb") as Node
-        val item = Item(model, 1f)
-        model.setLocalScale(0.5f)
-        bread.attachChild(model)
-        bread.addControl(RigidBodyControl(1f))
-        bread.addControl(FoodControl(item))
-        application.rootNode.attachChild(bread)
-        physicsSpace.add(bread)
+        val bread = Items.Burger(application.assetManager).spawnItem(application.rootNode, physicsSpace)
+        bread.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(1f, 0f, 2f)
+
+        val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
+        cake.setLocalTranslation(20f, 0f, 10f)
     }
 
     fun setupBetterPlayer() {
@@ -191,7 +187,7 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         camNode.isEnabled = true
         application.inputManager.isCursorVisible = false
 
-        BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this).setupKeys(application.inputManager)
+        BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this, application.inputManager).setupKeys()
         application.rootNode.attachChild(characterNode)
 
         initCrossHairs()

@@ -1,19 +1,26 @@
 package com.dendrrahsrage
 
 import com.dendrrahsrage.appstate.DefaultAppState
+import com.dendrrahsrage.item.Items
 import com.jme3.app.SimpleApplication
 import com.jme3.renderer.RenderManager
 import com.jme3.system.AppSettings
 import com.simsilica.lemur.GuiGlobals
+import com.simsilica.lemur.OptionPanelState
+import com.simsilica.lemur.style.BaseStyles
+
 
 /**
  * This is the Main Class of your Game. It should boot up your game and do initial initialisation
  * Move your Logic into AppStates or Controls or other java classes
  */
 class DendrrahsRage : SimpleApplication() {
+
     override fun simpleInitApp() {
         GuiGlobals.initialize(this)
         GuiGlobals.getInstance().isCursorEventsEnabled = false
+        BaseStyles.loadGlassStyle();
+        GuiGlobals.getInstance().getStyles().setDefaultStyle("glass")
 
         getStateManager().attach(DefaultAppState(this, settings))
     }
@@ -25,9 +32,6 @@ class DendrrahsRage : SimpleApplication() {
     override fun simpleRender(rm: RenderManager) {
         //add render code here (if any)
     }
-
-    fun pause() { paused = true }
-    fun unpause() { paused = false }
 
     fun main() {
         val app = DendrrahsRage()

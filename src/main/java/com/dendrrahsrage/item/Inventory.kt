@@ -1,7 +1,9 @@
 package com.dendrrahsrage.item
 
+import com.simsilica.lemur.core.VersionedList
+
 class Inventory(
-    private val items: MutableList<Item> = ArrayList(),
+    private val items: VersionedList<Item> = VersionedList(),
     private var maxWeight: Float = 40f
 ) {
 
@@ -27,6 +29,6 @@ class Inventory(
         return false
     }
 
-    fun items() = this.items.toList()
+    fun items() = this.items
 
 }

@@ -7,10 +7,7 @@ package com.dendrrahsrage.appstate
 import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.actionlistener.BetterWASDMovement
 import com.dendrrahsrage.actionlistener.WASDMovement
-import com.dendrrahsrage.control.BetterPlayerControl
-import com.dendrrahsrage.control.FoodControl
-import com.dendrrahsrage.control.GrowPlantsControl
-import com.dendrrahsrage.control.PlayerControl
+import com.dendrrahsrage.control.*
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Item
 import com.dendrrahsrage.item.Items
@@ -195,6 +192,8 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this, application.inputManager).setupKeys()
         application.rootNode.attachChild(characterNode)
+
+        characterNode.addControl(CurseControl())
 
         initCrossHairs()
     }

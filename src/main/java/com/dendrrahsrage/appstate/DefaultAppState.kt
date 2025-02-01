@@ -9,6 +9,7 @@ import com.dendrrahsrage.actionlistener.BetterWASDMovement
 import com.dendrrahsrage.actionlistener.WASDMovement
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
+import com.dendrrahsrage.control.GrowPlantsControl
 import com.dendrrahsrage.control.PlayerControl
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Item
@@ -30,6 +31,7 @@ import com.jme3.light.DirectionalLight
 import com.jme3.material.Material
 import com.jme3.math.ColorRGBA
 import com.jme3.math.Quaternion
+import com.jme3.math.Vector2f
 import com.jme3.math.Vector3f
 import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
@@ -130,8 +132,8 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         /** 4. We give the terrain its material, position & scale it, and attach it.  */
         terrain.setMaterial(mat_terrain)
-        terrain.setLocalTranslation(40f, -50f, 0f)
-        terrain.setLocalScale(2f, 0.5f, 2f)
+        //terrain.setLocalTranslation(40f, -50f, 0f)
+        //terrain.setLocalScale(2f, 0.5f, 2f)
 
         terrain.addControl(RigidBodyControl(0f))
         application.rootNode.attachChild(terrain)
@@ -143,7 +145,9 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         control.setLodCalculator(DistanceLodCalculator(patchSize, 2.7f)) // patch size, and a multiplier
         terrain.addControl(control)
 
-        setupBetterPlayer()
+        terrain.addControl(GrowPlantsControl(GrowPlantsControl.defaultPlants(application.assetManager), physicsSpace))
+
+        setupBetterPlayer(terrain)
 
         hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
 
@@ -152,11 +156,13 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
         cake.setLocalTranslation(20f, 0f, 10f)
+
+
     }
 
-    fun setupBetterPlayer() {
+    fun setupBetterPlayer(terrainQuad: TerrainQuad) {
         val characterNode = Node("character node")
-        characterNode.setLocalTranslation(0f, 2f, 0f)
+        characterNode.setLocalTranslation(0f, terrainQuad.getHeight(Vector2f(0f, 0f)), 0f)
 
         val model = application.assetManager.loadModel("Models/character.glb") as Node
         characterNode.attachChild(model)
@@ -203,30 +209,6 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
             settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0f
         )
         application.guiNode.attachChild(ch)
-    }
-
-    fun setupPlayer() {
-        val characterNode = Node()
-        val character = application.assetManager.loadModel("Models/character.glb") as Node
-        character.setLocalTranslation(0f, -0.6f, 0f)
-        character.setLocalScale(5F)
-        application.getRootNode().attachChild(characterNode)
-        val animComposer = character.getChild(0).getControl(AnimComposer::class.java)
-        animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
-        animComposer.setCurrentAction("walkForward")
-        characterNode.attachChild(character)
-
-        // We set up collision detection for the player by creating
-        // a capsule collision shape and a CharacterControl.
-        // The CharacterControl offers extra settings for
-        // size, step height, jumping, falling, and gravity.
-        // We also put the player in its starting position.
-        val capsuleShape = CapsuleCollisionShape(1.5f, 1f, 1)
-        player = PlayerControl(this.application, capsuleShape, character)
-        characterNode.addControl(player)
-        physicsSpace.add(player)
-
-        setUpKeys()
     }
 
     private fun setUpLight() {

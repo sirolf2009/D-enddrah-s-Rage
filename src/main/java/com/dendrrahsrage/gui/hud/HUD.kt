@@ -19,6 +19,7 @@ class HUD(
 ) {
 
     val weight = Label("Total weight")
+    val location = Label("Location")
     val hp = ProgressBar()
     val hunger = ProgressBar()
 
@@ -27,6 +28,7 @@ class HUD(
         guiNode.attachChild(topLeft)
         topLeft.setLocalTranslation(0f, app.guiViewPort.camera.height.toFloat(), 0f)
         topLeft.addChild(Label("D'endrrah's Rage v 0.0.0.0.0.0.0.0.0.1"))
+        topLeft.addChild(location)
 
         val topRight = Container()
         guiNode.attachChild(topRight)
@@ -51,5 +53,6 @@ class HUD(
         hp.progressValue = playerControl.health
         hunger.progressValue = playerControl.hunger
         weight.text = playerControl.inventory.currentWeight.toString()+"kg"
+        location.text = "${playerControl.characterNode.worldTranslation}"
     }
 }

@@ -12,7 +12,7 @@ class BetterPlayerControl(
     val characterNode: Node,
     val camera: CameraNode,
     private val animationComposer: AnimComposer
-) : BetterCharacterControl(0.3f, 1.9f, 8f) {
+) : BetterCharacterControl(0.3f, 1.9f, 80f) {
 
     var leftStrafe = false
     var rightStrafe = false

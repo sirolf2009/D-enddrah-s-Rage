@@ -1,12 +1,10 @@
 package com.dendrrahsrage
 
 import com.dendrrahsrage.appstate.DefaultAppState
-import com.dendrrahsrage.item.Items
 import com.jme3.app.SimpleApplication
 import com.jme3.renderer.RenderManager
 import com.jme3.system.AppSettings
 import com.simsilica.lemur.GuiGlobals
-import com.simsilica.lemur.OptionPanelState
 import com.simsilica.lemur.style.BaseStyles
 
 
@@ -33,21 +31,11 @@ class DendrrahsRage : SimpleApplication() {
         //add render code here (if any)
     }
 
-    fun main() {
-        val app = DendrrahsRage()
-        app.isShowSettings = false //Settings dialog not supported on mac
-        val settings = AppSettings(true)
-        settings.title = "D'endrrah's Rage"
-        settings.setWindowSize(1024, 800)
-        app.setSettings(settings)
-        app.start()
-    }
-
     companion object {
         @kotlin.jvm.JvmStatic
         fun main(args: Array<String>) {
             val app = DendrrahsRage()
-            app.isShowSettings = false //Settings dialog not supported on mac
+            app.isShowSettings = false
             val settings = AppSettings(true)
             settings.title = "D'endrrah's Rage"
             settings.setWindowSize(1024, 800)

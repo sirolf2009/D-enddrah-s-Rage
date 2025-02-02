@@ -11,6 +11,7 @@ import com.dendrrahsrage.control.*
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Item
 import com.dendrrahsrage.item.Items
+import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
@@ -38,6 +39,7 @@ import com.jme3.terrain.geomipmap.TerrainLodControl
 import com.jme3.terrain.geomipmap.TerrainQuad
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator
 import com.jme3.terrain.heightmap.AbstractHeightMap
+import com.jme3.terrain.heightmap.HillHeightMap
 import com.jme3.terrain.heightmap.ImageBasedHeightMap
 import com.jme3.texture.Texture
 import com.jme3.texture.Texture.WrapMode
@@ -107,11 +109,12 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         /* 2.a Create a custom height map from an image */
         var heightmap: AbstractHeightMap? = null
-        val heightMapImage: Texture = application.assetManager.loadTexture(
+/*        val heightMapImage: Texture = application.assetManager.loadTexture(
             "Textures/Terrain/splat/mountains512.png"
         )
         heightmap = ImageBasedHeightMap(heightMapImage.getImage())
-
+*/
+        heightmap = JNoiseHeightMap()
         heightmap.load()
 
 
@@ -130,7 +133,7 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         /** 4. We give the terrain its material, position & scale it, and attach it.  */
         terrain.setMaterial(mat_terrain)
         //terrain.setLocalTranslation(40f, -50f, 0f)
-        //terrain.setLocalScale(2f, 0.5f, 2f)
+        terrain.setLocalScale(4f, 4f, 4f)
 
         terrain.addControl(RigidBodyControl(0f))
         application.rootNode.attachChild(terrain)
@@ -159,7 +162,9 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
     fun setupBetterPlayer(terrainQuad: TerrainQuad) {
         val characterNode = Node("character node")
-        characterNode.setLocalTranslation(0f, terrainQuad.getHeight(Vector2f(0f, 0f)), 0f)
+        val characterX = 200f
+        val characterY = 200f
+        characterNode.setLocalTranslation(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)), characterY)
 
         val model = application.assetManager.loadModel("Models/character.glb") as Node
         characterNode.attachChild(model)

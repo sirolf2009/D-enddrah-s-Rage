@@ -54,7 +54,7 @@ dependencies {
     implementation 'org.jmonkeyengine:jme3-testdata:3.8.0-alpha2'
     implementation 'org.codehaus.groovy:groovy-all:3.0.23'
     implementation 'com.google.guava:guava:33.4.0-jre'
-
+    implementation 'de.articdive:jnoise-pipeline:4.1.0'
 
 
 }

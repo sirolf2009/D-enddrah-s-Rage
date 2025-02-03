@@ -33,7 +33,7 @@ class GrowPlantsControl(
             grow()
         }
         if(!hasInitialized) {
-            (0 ..< 250).forEach { grow() }
+            (0 ..< 750).forEach { grow() }
             hasInitialized = true
         }
     }

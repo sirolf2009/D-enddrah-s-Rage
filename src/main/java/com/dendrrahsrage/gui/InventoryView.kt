@@ -2,6 +2,7 @@ package com.dendrrahsrage.gui
 
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.gui.contextmenu.ContextMenu
+import com.dendrrahsrage.gui.layout.FlowLayout
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.Item
 import com.google.common.base.Function
@@ -13,6 +14,8 @@ import com.simsilica.lemur.*
 import com.simsilica.lemur.component.BorderLayout
 import com.simsilica.lemur.component.BorderLayout.Position
 import com.simsilica.lemur.component.QuadBackgroundComponent
+import com.simsilica.lemur.core.GuiControl
+import com.simsilica.lemur.core.VersionedReference
 import com.simsilica.lemur.list.CellRenderer
 import com.simsilica.lemur.list.DefaultCellRenderer
 import com.simsilica.lemur.style.ElementId
@@ -24,6 +27,8 @@ class InventoryView(
 ): Container(BorderLayout()) {
 
     var contextMenu: ContextMenu? = null
+    var itemList: Container? = null
+    lateinit var inventoryRef: VersionedReference<List<Item>>
 
     init {
         val dl = DirectionalLight()
@@ -32,46 +37,46 @@ class InventoryView(
         addLight(dl)
 
         addChild(Label("Inventory"), Position.North)
-        val list = ListBox(
-            inventory.items(),
-            object : CellRenderer<Item> {
-
-                override fun getView(value: Item?, selected: Boolean, existing: Panel?): Panel {
-                    val button = if (existing == null) {
-                        Button("", elementId, style).also {
-                            preferredSize = Vector3f(64f, 64f, 64f)
-                        }
-                    } else {
-                        (existing as Button)
-                    }
-                    button.background = QuadBackgroundComponent(value!!.icon)
-                    button.clickCommands?.clear()
-                    button.addClickCommands {
-                        println("clicked $value")
-                        contextMenu?.removeFromParent()
-                        contextMenu = ContextMenu(
-                            value.contextMenuItems(betterPlayerControl, this@InventoryView)
-                        )
-                        this@InventoryView.parent.attachChild(contextMenu)
-                        val mouse = inputManager.cursorPosition
-                        contextMenu!!.setLocalTranslation(
-                            mouse.x,
-                            mouse.y,
-                            2f
-                        )
-                    }
-                    return button
-                }
-
-                override fun configureStyle(elementId: ElementId?, style: String?) {}
-            },
-            null
-        )
-        list.preferredSize = Vector3f(64f, 512f, 64f)
-        addChild(list, Position.Center)
+        itemList = Container(FlowLayout())
+        fillInventoryView()
+        addChild(itemList, Position.Center)
 
         preferredSize = Vector3f(800f, 600f, 0f)
         background = QuadBackgroundComponent()
+    }
+
+    fun fillInventoryView() {
+        inventory.items().forEach { item ->
+            Button("", elementId, style).apply {
+                preferredSize = Vector3f(64f, 64f, 64f)
+                background = QuadBackgroundComponent(item.icon)
+                addClickCommands {
+                    contextMenu?.removeFromParent()
+                    contextMenu = ContextMenu(
+                        item.contextMenuItems(betterPlayerControl, this@InventoryView)
+                    )
+                    this@InventoryView.parent.attachChild(contextMenu)
+                    val mouse = inputManager.cursorPosition
+                    contextMenu!!.setLocalTranslation(
+                        mouse.x,
+                        mouse.y,
+                        2f
+                    )
+                }
+            }.let {
+                itemList!!.addChild(it)
+            }
+        }
+        itemList!!.getControl(GuiControl::class.java).invalidate()
+        inventoryRef = inventory.items().createReference()
+    }
+
+    override fun updateLogicalState(tpf: Float) {
+        super.updateLogicalState(tpf)
+        if(inventoryRef.update()) {
+            itemList!!.clearChildren()
+            fillInventoryView()
+        }
     }
 
     fun cleanup() {

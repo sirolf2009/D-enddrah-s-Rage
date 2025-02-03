@@ -200,6 +200,12 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         characterNode.addControl(CurseControl())
 
+        betterPlayerControl!!.inventory.addItem(Items.Burger(application.assetManager))
+        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
+        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
+        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
+        betterPlayerControl!!.inventory.addItem(Items.Cake(application.assetManager))
+
         initCrossHairs()
     }
 

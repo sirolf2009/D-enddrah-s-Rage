@@ -5,6 +5,7 @@
 package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.actionlistener.BetterWASDMovement
 import com.dendrrahsrage.actionlistener.WASDMovement
 import com.dendrrahsrage.control.*
@@ -44,12 +45,11 @@ import com.jme3.terrain.heightmap.ImageBasedHeightMap
 import com.jme3.texture.Texture
 import com.jme3.texture.Texture.WrapMode
 
-class DefaultAppState(private val application: DendrrahsRage, private val settings: AppSettings) : BulletAppState() {
+class DefaultAppState(
+    val application: DendrrahsRage
+) : BulletAppState() {
     private val stateNode: Node
-    private var player: PlayerControl? = null
-    private var betterPlayerControl: BetterPlayerControl? = null
     private var hud: HUD? = null
-    var mouseCapture = true
 
     init {
         stateNode = Node("Default state")
@@ -136,7 +136,7 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         terrain.setLocalScale(4f, 4f, 4f)
 
         terrain.addControl(RigidBodyControl(0f))
-        application.rootNode.attachChild(terrain)
+        stateNode.attachChild(terrain)
         physicsSpace.add(terrain)
 
 
@@ -149,107 +149,31 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         setupBetterPlayer(terrain)
 
-        hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
+        hud = HUD(application, application.getGuiNode(), application.player.getPlayerControl())
 
-        val bread = Items.Burger(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-        bread.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(1f, 0f, 2f)
-
-        val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-        cake.setLocalTranslation(20f, 0f, 10f)
-
-
+        application.rootNode.attachChild(stateNode)
     }
 
     fun setupBetterPlayer(terrainQuad: TerrainQuad) {
-        val characterNode = Node("character node")
+        stateNode.attachChild(application.player.node)
+        physicsSpace.add(application.player.getPlayerControl())
+
         val characterX = 200f
         val characterY = 200f
-        characterNode.setLocalTranslation(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)), characterY)
-
-        val model = application.assetManager.loadModel("Models/character.glb") as Node
-        characterNode.attachChild(model)
-        val animComposer = model.getChild(0).getControl(AnimComposer::class.java)
-        animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
-        animComposer.addAction("idle", ClipAction(animComposer.getAnimClip("idle")))
-        animComposer.setCurrentAction("idle")
-
-
-        application.camera.setLocation(Vector3f(10f, 6f, -5f))
-        val camNode = CameraNode("CamNode", application.camera)
-        camNode.setControlDir(ControlDirection.SpatialToCamera)
-        camNode.setLocalTranslation(Vector3f(0f, 2f, -6f))
-
-        betterPlayerControl = BetterPlayerControl(characterNode, camNode, animComposer)
-        characterNode.addControl(betterPlayerControl)
-        physicsSpace.add(betterPlayerControl)
-
-        val quat = Quaternion()
-
-        // These coordinates are local, the camNode is attached to the character node!
-        quat.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y)
-        camNode.localRotation = quat
-        characterNode.attachChild(camNode)
-
-        // Disable by default, can be enabled via keyboard shortcut
-        application.flyByCamera.isEnabled = false
-        camNode.isEnabled = true
-        application.inputManager.isCursorVisible = false
-
-        BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this, application.inputManager).setupKeys()
-        application.rootNode.attachChild(characterNode)
-
-        characterNode.addControl(CurseControl())
-
-        betterPlayerControl!!.inventory.addItem(Items.Burger(application.assetManager))
-        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
-        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
-        betterPlayerControl!!.inventory.addItem(Items.Leek(application.assetManager))
-        betterPlayerControl!!.inventory.addItem(Items.Cake(application.assetManager))
-
-        initCrossHairs()
-    }
-
-    private fun initCrossHairs() {
-        application.setDisplayStatView(false)
-        val guiFont = application.assetManager.loadFont("Interface/Fonts/Default.fnt")
-        val ch: BitmapText = BitmapText(guiFont)
-        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2f)
-        ch.setText("+") // crosshairs
-        ch.setLocalTranslation( // center
-            settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0f
-        )
-        application.guiNode.attachChild(ch)
+        application.player.node.setLocalTranslation(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
+        application.player.getPlayerControl().getRigidBody().physicsLocation = Vector3f(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
     }
 
     private fun setUpLight() {
         // We add light so we see the scene
         val al = AmbientLight()
         al.color = ColorRGBA.White.mult(1.3f)
-        application.getRootNode().addLight(al)
+        stateNode.addLight(al)
 
         val dl = DirectionalLight()
         dl.color = ColorRGBA.White
         dl.direction = Vector3f(2.8f, -2.8f, -2.8f).normalizeLocal()
-        application.getRootNode().addLight(dl)
-    }
-
-    /**
-     * We over-write some navigational key mappings here, so we can add
-     * physics-controlled walking and jumping:
-     */
-    private fun setUpKeys() {
-        val inputManager = application.inputManager
-        val wasdMovement = player?.let { WASDMovement(it) }
-        inputManager.addMapping("Left", KeyTrigger(KeyInput.KEY_A))
-        inputManager.addMapping("Right", KeyTrigger(KeyInput.KEY_D))
-        inputManager.addMapping("Up", KeyTrigger(KeyInput.KEY_W))
-        inputManager.addMapping("Down", KeyTrigger(KeyInput.KEY_S))
-        inputManager.addMapping("Jump", KeyTrigger(KeyInput.KEY_SPACE))
-        inputManager.addMapping(
-            "shoot",
-            MouseButtonTrigger(MouseInput.BUTTON_LEFT)
-        )
-        inputManager.addListener(wasdMovement, "Left", "Right", "Up", "Down", "Jump")
+        stateNode.addLight(dl)
     }
 
     override fun cleanup() {
@@ -259,10 +183,6 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
     override fun update(tpf: Float) {
         super.update(tpf)
-//        player!!.update(tpf)
-        betterPlayerControl?.update(tpf)
         hud?.update()
-
-        application.inputManager.isCursorVisible = !mouseCapture
     }
 }

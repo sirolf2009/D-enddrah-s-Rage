@@ -1,5 +1,6 @@
 package com.dendrrahsrage.actionlistener
 
+import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.appstate.DefaultAppState
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
@@ -21,7 +22,7 @@ class BetterWASDMovement(
     private val playerControl: BetterPlayerControl,
     private val sceneNode: Node,
     private val guiNode: Node,
-    private val appState: DefaultAppState,
+    private val application: DendrrahsRage,
     private val inputManager: InputManager
 ): ActionListener, AnalogListener {
 
@@ -122,13 +123,13 @@ class BetterWASDMovement(
                 inventoryView = InventoryView(inputManager, playerControl, playerControl.inventory)
                 inventoryView!!.setLocalTranslation(20f, 700f, 0f)
                 guiNode.attachChild(inventoryView)
-                appState.mouseCapture = false
+                application.mouseCapture = false
                 GuiGlobals.getInstance().isCursorEventsEnabled = true
             } else {
                 inventoryView!!.cleanup()
                 guiNode.detachChild(inventoryView)
                 inventoryView = null
-                appState.mouseCapture = true
+                application.mouseCapture = true
                 GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
         }
@@ -159,7 +160,7 @@ class BetterWASDMovement(
     }
 
     override fun onAnalog(name: String?, value: Float, tpf: Float) {
-        if (appState.mouseCapture) {
+        if (application.mouseCapture) {
             if ((name == CameraInput.FLYCAM_LEFT)) {
                 rotateCamera(value, Vector3f.UNIT_Y)
             } else if ((name == CameraInput.FLYCAM_RIGHT)) {

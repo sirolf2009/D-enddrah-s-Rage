@@ -64,4 +64,6 @@ class BetterPlayerControl(
         }
     }
 
+    fun getRigidBody() = rigidBody
+
 }

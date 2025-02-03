@@ -26,9 +26,15 @@ class GrowPlantsControl(
     val physicsSpace: PhysicsSpace
 ) : AbstractControl() {
 
+    var hasInitialized = false
+
     override fun controlUpdate(tpf: Float) {
         if(Random.nextInt(100) == 0) {
             grow()
+        }
+        if(!hasInitialized) {
+            (0 ..< 250).forEach { grow() }
+            hasInitialized = true
         }
     }
 

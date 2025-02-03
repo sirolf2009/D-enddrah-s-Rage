@@ -7,10 +7,12 @@ import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
 import com.jme3.bullet.PhysicsSpace
 import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.scene.Node
+import com.jme3.texture.Texture
 
 open class Item(
     val name: String,
     val model: Node,
+    val icon: Texture,
     val weight: Float,
 ) {
 

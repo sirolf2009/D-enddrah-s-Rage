@@ -33,16 +33,6 @@ class DendrrahsRage : SimpleApplication() {
         //add render code here (if any)
     }
 
-    fun main() {
-        val app = DendrrahsRage()
-        app.isShowSettings = false //Settings dialog not supported on mac
-        val settings = AppSettings(true)
-        settings.title = "D'endrrah's Rage"
-        settings.setWindowSize(1024, 800)
-        app.setSettings(settings)
-        app.start()
-    }
-
     companion object {
         @kotlin.jvm.JvmStatic
         fun main(args: Array<String>) {

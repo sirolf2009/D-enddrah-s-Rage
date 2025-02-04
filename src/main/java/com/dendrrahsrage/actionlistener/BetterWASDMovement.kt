@@ -10,9 +10,7 @@ import com.jme3.input.InputManager
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
 import com.jme3.input.controls.*
-import com.jme3.math.Matrix3f
-import com.jme3.math.Ray
-import com.jme3.math.Vector3f
+import com.jme3.math.*
 import com.jme3.scene.Node
 import com.simsilica.lemur.GuiGlobals
 
@@ -53,13 +51,14 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_G),
             KeyTrigger(KeyInput.KEY_LSHIFT),
             KeyTrigger(KeyInput.KEY_RSHIFT))
-        inputManager.addMapping("Pickup", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+        inputManager.addMapping("Pickup", KeyTrigger(KeyInput.KEY_E))
+        inputManager.addMapping("Attack", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
         inputManager.addMapping("Inventory", KeyTrigger(KeyInput.KEY_TAB))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
-        inputManager.addListener(this, "Pickup", "Inventory")
+        inputManager.addListener(this, "Pickup", "Inventory", "Attack")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -131,6 +130,8 @@ class BetterWASDMovement(
                 appState.mouseCapture = true
                 GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
+        } else if(binding.equals("Attack") && !value) {
+            playerControl.attack()
         }
     }
 

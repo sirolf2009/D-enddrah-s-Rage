@@ -6,25 +6,20 @@ package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.actionlistener.BetterWASDMovement
-import com.dendrrahsrage.actionlistener.WASDMovement
 import com.dendrrahsrage.control.BetterPlayerControl
-import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.control.PlayerControl
+import com.dendrrahsrage.control.entity.CowAI
 import com.dendrrahsrage.gui.hud.HUD
-import com.dendrrahsrage.item.Item
 import com.dendrrahsrage.item.Items
 import com.jme3.anim.AnimComposer
+import com.jme3.anim.ArmatureMask
+import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
 import com.jme3.bullet.BulletAppState
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
 import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.font.BitmapText
-import com.jme3.input.KeyInput
-import com.jme3.input.MouseInput
-import com.jme3.input.controls.KeyTrigger
-import com.jme3.input.controls.MouseButtonTrigger
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.material.Material
@@ -59,7 +54,9 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
     }
 
     override fun stateAttached(stateManager: AppStateManager) {
-        super.stateAttached(stateManager) // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+        super.stateAttached(stateManager)
+
+        physicsSpace.setGravity(Vector3f(0f, -20f, 0f))
 
         // We re-use the flyby camera for rotation, while positioning is handled by physics
         application.viewPort.backgroundColor = ColorRGBA(0.7f, 0.8f, 1f, 1f)
@@ -147,11 +144,14 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
 
-        val bread = Items.Burger(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-        bread.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(1f, 0f, 2f)
-
-        val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-        cake.setLocalTranslation(20f, 0f, 10f)
+//        val bread = Items.Burger(application.assetManager).spawnItem(application.rootNode, physicsSpace)
+//        bread.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(1f, 0f, 2f)
+//
+//        val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
+//        cake.setLocalTranslation(20f, 0f, 10f)
+//
+//        val greatSword = Items.GreatSword(application.assetManager).spawnItem(application.rootNode, physicsSpace)
+//        greatSword.setLocalTranslation(20f, 0f, 20f)
     }
 
     fun setupBetterPlayer() {
@@ -161,10 +161,11 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         val model = application.assetManager.loadModel("Models/character.glb") as Node
         characterNode.attachChild(model)
         val animComposer = model.getChild(0).getControl(AnimComposer::class.java)
-        animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
-        animComposer.addAction("idle", ClipAction(animComposer.getAnimClip("idle")))
+        animComposer.animClipsNames.forEach { animComposer.addAction(it, ClipAction(animComposer.getAnimClip(it))) }
         animComposer.setCurrentAction("idle")
-
+        val attackMask = ArmatureMask(model.getChild(0).getControl(SkinningControl::class.java).armature)
+        attackMask.removeJoints(model.getChild(0).getControl(SkinningControl::class.java).armature, "mixamorig1:LeftUpLeg", "mixamorig1:RightUpLeg")
+        animComposer.makeLayer("attack", attackMask)
 
         application.camera.setLocation(Vector3f(10f, 6f, -5f))
         val camNode = CameraNode("CamNode", application.camera)
@@ -175,8 +176,18 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         characterNode.addControl(betterPlayerControl)
         physicsSpace.add(betterPlayerControl)
 
-        val quat = Quaternion()
+        betterPlayerControl!!.equip(Items.GreatSword(application.assetManager))
 
+        isDebugEnabled = true
+
+        val cowNode = Node("Cow")
+        val cowModel = application.assetManager.loadModel("Models/cow.glb") as Node
+        cowNode.attachChild(cowModel)
+        cowNode.addControl(RigidBodyControl(1000f))
+        physicsSpace.add(cowNode)
+        application.rootNode.attachChild(cowNode)
+
+        val quat = Quaternion()
         // These coordinates are local, the camNode is attached to the character node!
         quat.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y)
         camNode.localRotation = quat
@@ -205,30 +216,6 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         application.guiNode.attachChild(ch)
     }
 
-    fun setupPlayer() {
-        val characterNode = Node()
-        val character = application.assetManager.loadModel("Models/character.glb") as Node
-        character.setLocalTranslation(0f, -0.6f, 0f)
-        character.setLocalScale(5F)
-        application.getRootNode().attachChild(characterNode)
-        val animComposer = character.getChild(0).getControl(AnimComposer::class.java)
-        animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
-        animComposer.setCurrentAction("walkForward")
-        characterNode.attachChild(character)
-
-        // We set up collision detection for the player by creating
-        // a capsule collision shape and a CharacterControl.
-        // The CharacterControl offers extra settings for
-        // size, step height, jumping, falling, and gravity.
-        // We also put the player in its starting position.
-        val capsuleShape = CapsuleCollisionShape(1.5f, 1f, 1)
-        player = PlayerControl(this.application, capsuleShape, character)
-        characterNode.addControl(player)
-        physicsSpace.add(player)
-
-        setUpKeys()
-    }
-
     private fun setUpLight() {
         // We add light so we see the scene
         val al = AmbientLight()
@@ -239,25 +226,6 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         dl.color = ColorRGBA.White
         dl.direction = Vector3f(2.8f, -2.8f, -2.8f).normalizeLocal()
         application.getRootNode().addLight(dl)
-    }
-
-    /**
-     * We over-write some navigational key mappings here, so we can add
-     * physics-controlled walking and jumping:
-     */
-    private fun setUpKeys() {
-        val inputManager = application.inputManager
-        val wasdMovement = player?.let { WASDMovement(it) }
-        inputManager.addMapping("Left", KeyTrigger(KeyInput.KEY_A))
-        inputManager.addMapping("Right", KeyTrigger(KeyInput.KEY_D))
-        inputManager.addMapping("Up", KeyTrigger(KeyInput.KEY_W))
-        inputManager.addMapping("Down", KeyTrigger(KeyInput.KEY_S))
-        inputManager.addMapping("Jump", KeyTrigger(KeyInput.KEY_SPACE))
-        inputManager.addMapping(
-            "shoot",
-            MouseButtonTrigger(MouseInput.BUTTON_LEFT)
-        )
-        inputManager.addListener(wasdMovement, "Left", "Right", "Up", "Down", "Jump")
     }
 
     override fun cleanup() {

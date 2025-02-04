@@ -1,5 +1,6 @@
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.item.Inventory
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
@@ -9,9 +10,7 @@ import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
 
 class BetterPlayerControl(
-    val characterNode: Node,
-    val camera: CameraNode,
-    private val animationComposer: AnimComposer
+    val player: Player
 ) : BetterCharacterControl(0.3f, 1.9f, 80f) {
 
     var leftStrafe = false
@@ -31,8 +30,8 @@ class BetterPlayerControl(
 
         // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        val modelForwardDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_Z)
-        val modelLeftDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_X)
+        val modelForwardDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_Z)
+        val modelLeftDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_X)
 
         // WalkDirection is global!
         // You *can* make your character fly with this.
@@ -52,15 +51,15 @@ class BetterPlayerControl(
         }
         setWalkDirection(walkDirection)
 
-        camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+        player.getCameraNode().lookAt(player.node.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
 
         hunger -= tpf / 100
     }
 
     fun setAnimation(name: String) {
-        val action = animationComposer.getCurrentAction("Default") as ClipAction
+        val action = player.getAnimComposer().getCurrentAction("Default") as ClipAction
         if(!action.animClip.name.equals(name)) {
-            animationComposer.setCurrentAction(name)
+            player.getAnimComposer().setCurrentAction(name)
         }
     }
 

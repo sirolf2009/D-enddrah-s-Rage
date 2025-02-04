@@ -10,7 +10,7 @@ data class Player(
 ) {
 
     fun getPlayerControl() = node.getControl(BetterPlayerControl::class.java)
-    fun getAnimCompose() = getModel().getChild(0).getControl(AnimComposer::class.java)
+    fun getAnimComposer() = getModel().getChild(0).getControl(AnimComposer::class.java)
     fun getCameraNode() = node.getChild(CameraNodeName) as CameraNode
     fun getModel() = node.getChild("Scene") as Node
 

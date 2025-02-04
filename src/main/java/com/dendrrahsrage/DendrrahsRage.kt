@@ -66,22 +66,22 @@ class DendrrahsRage : SimpleApplication() {
         camNode.setLocalTranslation(Vector3f(0f, 2f, -6f))
         characterNode.attachChild(camNode)
 
-        val betterPlayerControl = BetterPlayerControl(characterNode, camNode, animComposer)
-        characterNode.addControl(betterPlayerControl)
-
         characterNode.addControl(CurseControl())
+
+        player = Player(characterNode)
+
+        val betterPlayerControl = BetterPlayerControl(player)
+        characterNode.addControl(betterPlayerControl)
 
         betterPlayerControl.inventory.addItem(Items.Burger(assetManager))
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Cake(assetManager))
-
-        player = Player(characterNode)
     }
 
     companion object {
-        @kotlin.jvm.JvmStatic
+        @JvmStatic
         fun main(args: Array<String>) {
             val app = DendrrahsRage()
             app.isShowSettings = false

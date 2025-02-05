@@ -4,6 +4,7 @@
  */
 package com.dendrrahsrage.gui.hud
 
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.jme3.app.Application
 import com.jme3.math.Vector3f
@@ -15,10 +16,11 @@ import com.simsilica.lemur.ProgressBar
 class HUD(
     app: Application,
     guiNode: Node,
-    val playerControl: BetterPlayerControl,
+    val player: Player,
 ) {
 
     val weight = Label("Total weight")
+    val location = Label("Location")
     val hp = ProgressBar()
     val hunger = ProgressBar()
 
@@ -27,6 +29,7 @@ class HUD(
         guiNode.attachChild(topLeft)
         topLeft.setLocalTranslation(0f, app.guiViewPort.camera.height.toFloat(), 0f)
         topLeft.addChild(Label("D'endrrah's Rage v 0.0.0.0.0.0.0.0.0.1"))
+        topLeft.addChild(location)
 
         val topRight = Container()
         guiNode.attachChild(topRight)
@@ -48,8 +51,9 @@ class HUD(
     }
 
     fun update() {
-        hp.progressValue = playerControl.health
-        hunger.progressValue = playerControl.hunger
-        weight.text = playerControl.inventory.currentWeight.toString()+"kg"
+        hp.progressValue = player.getPlayerControl().health
+        hunger.progressValue = player.getPlayerControl().hunger
+        weight.text = player.getPlayerControl().inventory.currentWeight.toString()+"kg"
+        location.text = "${player.node.worldTranslation}"
     }
 }

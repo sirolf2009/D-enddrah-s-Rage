@@ -1,5 +1,6 @@
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.WeaponItem
 import com.jme3.anim.AnimComposer
@@ -14,9 +15,7 @@ import com.jme3.scene.Node
 import com.jme3.terrain.geomipmap.TerrainQuad
 
 class BetterPlayerControl(
-    val characterNode: Node,
-    val camera: CameraNode,
-    private val animationComposer: AnimComposer
+    val player: Player
 ) : BetterCharacterControl(0.3f, 1.9f, 80f) {
 
     var leftStrafe = false
@@ -38,8 +37,8 @@ class BetterPlayerControl(
 
         // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        val modelForwardDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_Z)
-        val modelLeftDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_X)
+        val modelForwardDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_Z)
+        val modelLeftDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_X)
 
         // WalkDirection is global!
         // You *can* make your character fly with this.
@@ -59,7 +58,7 @@ class BetterPlayerControl(
         }
         setWalkDirection(walkDirection)
 
-        camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+        player.getCameraNode().lookAt(player.node.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
 
         hunger -= tpf / 100
 
@@ -73,7 +72,7 @@ class BetterPlayerControl(
         isAttacking = true
         setAnimation(equipedItem?.getAttack() ?: "attack", "attack", false)
         physicsSpace.addCollisionListener { evt ->
-            if(evt.nodeA == characterNode) {
+            if(evt.nodeA == player.node) {
                 println("it's a me, mario")
                 if(evt.nodeB !is TerrainQuad) {
                     val collisionResults = CollisionResults()
@@ -82,7 +81,7 @@ class BetterPlayerControl(
                     println(collisionResults)
                 }
             }
-            if(evt.nodeB == characterNode) {
+            if(evt.nodeB == player.node) {
                 println("it's a me, mario b, I collided with ${evt.nodeA}")
                 if(evt.nodeA !is TerrainQuad) {
                     val collisionResults = CollisionResults()
@@ -95,9 +94,9 @@ class BetterPlayerControl(
     }
 
     fun setAnimation(name: String, layer: String = "Default", loop: Boolean = true): ClipAction {
-        val action = animationComposer.getCurrentAction(layer) as? ClipAction
+        val action = player.getAnimComposer().getCurrentAction(layer) as? ClipAction
         if (action == null || !action.animClip.name.equals(name)) {
-            return animationComposer.setCurrentAction(name, layer, loop) as ClipAction
+            return player.getAnimComposer().setCurrentAction(name, layer, loop) as ClipAction
         }
         return action
     }
@@ -118,9 +117,8 @@ class BetterPlayerControl(
         }
     }
 
-    fun getRightHand() = getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
+    fun getRightHand() = player.getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
 
-    fun getSkinningControl() =
-        ((characterNode.getChild("Scene") as Node).getChild(0) as Node).getControl(SkinningControl::class.java)
+    fun getRigidBody() = rigidBody
 
 }

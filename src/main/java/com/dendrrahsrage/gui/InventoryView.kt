@@ -1,9 +1,9 @@
 package com.dendrrahsrage.gui
 
-import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.gui.contextmenu.ContextMenu
-import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
+import com.dendrrahsrage.gui.layout.FlowLayout
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.Item
 import com.google.common.base.Function
@@ -11,23 +11,25 @@ import com.jme3.input.InputManager
 import com.jme3.light.DirectionalLight
 import com.jme3.math.ColorRGBA
 import com.jme3.math.Vector3f
-import com.simsilica.lemur.Button
-import com.simsilica.lemur.Container
-import com.simsilica.lemur.Label
-import com.simsilica.lemur.ListBox
-import com.simsilica.lemur.Panel
+import com.simsilica.lemur.*
 import com.simsilica.lemur.component.BorderLayout
 import com.simsilica.lemur.component.BorderLayout.Position
 import com.simsilica.lemur.component.QuadBackgroundComponent
+import com.simsilica.lemur.core.GuiControl
+import com.simsilica.lemur.core.VersionedReference
+import com.simsilica.lemur.list.CellRenderer
 import com.simsilica.lemur.list.DefaultCellRenderer
+import com.simsilica.lemur.style.ElementId
 
 class InventoryView(
     private val inputManager: InputManager,
-    private val betterPlayerControl: BetterPlayerControl,
+    private val player: Player,
     private val inventory: Inventory,
 ): Container(BorderLayout()) {
 
     var contextMenu: ContextMenu? = null
+    var itemList: Container? = null
+    lateinit var inventoryRef: VersionedReference<List<Item>>
 
     init {
         val dl = DirectionalLight()
@@ -36,40 +38,46 @@ class InventoryView(
         addLight(dl)
 
         addChild(Label("Inventory"), Position.North)
-        val list = ListBox(
-            inventory.items(),
-            object : DefaultCellRenderer<Item>() {
-                override fun valueToString(value: Item?): String {
-                    return value!!.name
-                }
-
-                override fun getView(value: Item?, selected: Boolean, existing: Panel?): Panel {
-                    val button = super.getView(value, selected, existing) as Button
-                    button.clickCommands?.clear()
-                    button.addClickCommands {
-                        println("clicked $value")
-                        contextMenu?.removeFromParent()
-                        contextMenu = ContextMenu(
-                            value!!.contextMenuItems(betterPlayerControl, this@InventoryView)
-                        )
-                        this@InventoryView.parent.attachChild(contextMenu)
-                        val mouse = inputManager.cursorPosition
-                        contextMenu!!.setLocalTranslation(
-                            mouse.x,
-                            mouse.y,
-                            2f
-                        )
-                    }
-                    return button
-                }
-            },
-            null
-        )
-        (list.cellRenderer as DefaultCellRenderer).transform = Function<Item, String> { input -> input.name }
-        addChild(list, Position.Center)
+        itemList = Container(FlowLayout())
+        fillInventoryView()
+        addChild(itemList, Position.Center)
 
         preferredSize = Vector3f(800f, 600f, 0f)
         background = QuadBackgroundComponent()
+    }
+
+    fun fillInventoryView() {
+        inventory.items().forEach { item ->
+            Button("", elementId, style).apply {
+                preferredSize = Vector3f(64f, 64f, 64f)
+                background = QuadBackgroundComponent(item.icon)
+                addClickCommands {
+                    contextMenu?.removeFromParent()
+                    contextMenu = ContextMenu(
+                        item.contextMenuItems(player, this@InventoryView)
+                    )
+                    this@InventoryView.parent.attachChild(contextMenu)
+                    val mouse = inputManager.cursorPosition
+                    contextMenu!!.setLocalTranslation(
+                        mouse.x,
+                        mouse.y,
+                        2f
+                    )
+                }
+            }.let {
+                itemList!!.addChild(it)
+            }
+        }
+        itemList!!.getControl(GuiControl::class.java).invalidate()
+        inventoryRef = inventory.items().createReference()
+    }
+
+    override fun updateLogicalState(tpf: Float) {
+        super.updateLogicalState(tpf)
+        if(inventoryRef.update()) {
+            itemList!!.clearChildren()
+            fillInventoryView()
+        }
     }
 
     fun cleanup() {

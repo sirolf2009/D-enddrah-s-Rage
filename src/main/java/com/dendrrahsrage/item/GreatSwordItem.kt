@@ -4,13 +4,15 @@ import com.jme3.math.FastMath
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
 import com.jme3.scene.Node
+import com.jme3.texture.Texture
 
 
 open class GreatSwordItem(
     name: String,
     model: Node,
+    icon: Texture,
     weight: Float,
-) : WeaponItem(name, model, weight) {
+) : WeaponItem(name, model, icon, weight) {
 
     override fun onEquipped() {
         model.setLocalTranslation(00f, 13f, 5f)

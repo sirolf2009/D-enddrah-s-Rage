@@ -1,5 +1,6 @@
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.Player
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.WeaponItem
@@ -7,9 +8,13 @@ import com.jme3.anim.AnimComposer
 import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.Action
 import com.jme3.anim.tween.action.ClipAction
+import com.jme3.app.Application
+import com.jme3.asset.DesktopAssetManager
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
+import com.jme3.bullet.collision.shapes.CollisionShape
 import com.jme3.bullet.control.BetterCharacterControl
 import com.jme3.bullet.control.GhostControl
+import com.jme3.bullet.util.CollisionShapeFactory
 import com.jme3.collision.CollisionResults
 import com.jme3.math.Vector3f
 import com.jme3.scene.CameraNode

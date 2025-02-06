@@ -8,9 +8,12 @@ import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.PlayerControl
 import com.dendrrahsrage.control.*
+import com.dendrrahsrage.control.entity.CowAI
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Items
 import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
+import com.jme3.anim.AnimComposer
+import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
 import com.jme3.bullet.BulletAppState
@@ -142,11 +145,16 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
-        val cowNode = Node("Cow")
+        isDebugEnabled = true
+
+        val cowNode = Node("cow")
         val cowModel = application.assetManager.loadModel("Models/cow.glb") as Node
+        val animComposer = cowModel.getChild(0).getControl(AnimComposer::class.java)
+        animComposer.addAction("Walk", ClipAction(animComposer.getAnimClip("Walk")))
         cowNode.attachChild(cowModel)
         cowNode.addControl(RigidBodyControl(1000f))
         cowNode.addControl(HealthControl(application.assetManager))
+        cowNode.addControl(CowAI(terrain))
         val cowX = 201f
         val cowY = 200f
         cowNode.setLocalTranslation(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)

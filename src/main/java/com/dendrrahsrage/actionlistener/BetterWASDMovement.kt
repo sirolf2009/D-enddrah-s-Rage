@@ -6,6 +6,7 @@ import com.dendrrahsrage.appstate.DefaultAppState
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.gui.InventoryView
+import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.collision.CollisionResults
 import com.jme3.input.CameraInput
 import com.jme3.input.InputManager
@@ -113,9 +114,11 @@ class BetterWASDMovement(
                 val closest = results.closestCollision
                 if(closest.distance < 15f) {
                     foodItem(closest.geometry.parent)?.let {
+                        val rigidBodyControl = it.getControl(RigidBodyControl::class.java)
                         val item = it.getControl(FoodControl::class.java).item
                         if(player.getPlayerControl().inventory.addItem(item)) {
                             it.parent.detachChild(it)
+                            rigidBodyControl.physicsSpace.remove(rigidBodyControl)
                         }
                     }
                 }

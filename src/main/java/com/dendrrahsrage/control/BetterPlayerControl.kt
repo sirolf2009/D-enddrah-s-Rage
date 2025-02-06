@@ -31,7 +31,7 @@ class BetterPlayerControl(
     var hunger = 70.0
 
     val inventory = Inventory()
-    private var equipedItem: WeaponItem? = null
+    private var equipedItem: EquipmentNode? = null
     private var attack: Attack? = null
 
     override fun update(tpf: Float) {
@@ -51,12 +51,12 @@ class BetterPlayerControl(
             walkDirection.addLocal(modelLeftDir.negate().multLocal(3f))
         }
         if (forward) {
-            setAnimation(equipedItem?.getWalkForward() ?: "walkForward")
+            setAnimation(equipedItem?.item?.getWalkForward() ?: "walkForward")
             walkDirection.addLocal(modelForwardDir.mult(6f))
         } else if (backward) {
             walkDirection.addLocal(modelForwardDir.negate().multLocal(3f))
         } else {
-            setAnimation(equipedItem?.getIdle() ?: "idle")
+            setAnimation(equipedItem?.item?.getIdle() ?: "idle")
         }
         setWalkDirection(walkDirection)
 
@@ -69,7 +69,7 @@ class BetterPlayerControl(
 
     fun attack() {
         if(attack == null) {
-            setAnimation(equipedItem?.getAttack() ?: "attack", "attack", false)
+            setAnimation(equipedItem?.item?.getAttack() ?: "attack", "attack", false)
             attack = Attack(player)
         }
     }
@@ -84,20 +84,29 @@ class BetterPlayerControl(
 
     fun equip(item: WeaponItem) {
         unequip()
-        equipedItem = item
-        getRightHand().attachChild(item.model)
-        item.model.addControl(GhostControl(item.getCollisionShape()))
+
         item.model.scale(50f)
-        physicsSpace.add(item.model)
+
+        val equipmentCollisionNode = item.createCollisionShape()
+
+        val equipmentNode = EquipmentNode(
+            "rightHandEquipment",
+            item,
+            item.model,
+            equipmentCollisionNode
+        )
+        equipedItem = equipmentNode
+        getRightHand().attachChild(equipmentNode)
+        physicsSpace.add(equipmentCollisionNode)
         item.onEquipped()
     }
 
     fun unequip() {
         equipedItem?.let {
             it.model.scale(1 / 50f)
-            it.model.removeControl(GhostControl::class.java)
-            inventory.addItem(it)
-            getRightHand().detachChild(it.model)
+            it.collision.removeControl(GhostControl::class.java)
+            inventory.addItem(it.item)
+            getRightHand().detachChild(it)
         }
     }
 
@@ -107,7 +116,7 @@ class BetterPlayerControl(
 
     class Attack(
         val player: Player,
-        val ghostControl: GhostControl = player.getPlayerControl().equipedItem!!.model.getControl(GhostControl::class.java)
+        val ghostControl: GhostControl = player.getPlayerControl().equipedItem!!.collision.getControl(GhostControl::class.java)
     ) {
 
         val targetsHit = mutableListOf<Node>()
@@ -120,7 +129,7 @@ class BetterPlayerControl(
                 targetsHit.add(node)
                 node.getControl(HealthControl::class.java)?.let { health ->
                     println("hit "+node)
-                    health.damage(player.getPlayerControl().equipedItem!!.getDamage())
+                    health.damage(player.getPlayerControl().equipedItem!!.item.getDamage())
                 }
             }
             if(hasAnimationFinished()) {
@@ -129,6 +138,20 @@ class BetterPlayerControl(
         }
 
         fun hasAnimationFinished(): Boolean = player.getAnimComposer().getCurrentAction("attack") == null
+
+    }
+
+    data class EquipmentNode(
+        private val name: String,
+        val item: WeaponItem,
+        val model: Node,
+        val collision: Node
+    ): Node(name) {
+
+        init {
+            attachChild(model)
+            attachChild(collision)
+        }
 
     }
 

@@ -30,6 +30,7 @@ class DendrrahsRage : SimpleApplication() {
     var mouseCapture = true
 
     override fun simpleInitApp() {
+        instance = this
         GuiGlobals.initialize(this)
         GuiGlobals.getInstance().isCursorEventsEnabled = false
         BaseStyles.loadGlassStyle();
@@ -87,6 +88,9 @@ class DendrrahsRage : SimpleApplication() {
     }
 
     companion object {
+
+        var instance: DendrrahsRage? = null
+
         @JvmStatic
         fun main(args: Array<String>) {
             val app = DendrrahsRage()

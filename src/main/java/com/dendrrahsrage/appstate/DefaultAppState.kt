@@ -9,6 +9,7 @@ import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.PlayerControl
 import com.dendrrahsrage.control.*
 import com.dendrrahsrage.gui.hud.HUD
+import com.dendrrahsrage.item.Items
 import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
@@ -141,13 +142,11 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
-        isDebugEnabled = true
-
         val cowNode = Node("Cow")
         val cowModel = application.assetManager.loadModel("Models/cow.glb") as Node
         cowNode.attachChild(cowModel)
         cowNode.addControl(RigidBodyControl(1000f))
-        cowNode.addControl(HealthControl())
+        cowNode.addControl(HealthControl(application.assetManager))
         val cowX = 201f
         val cowY = 200f
         cowNode.setLocalTranslation(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
@@ -164,6 +163,8 @@ class DefaultAppState(
         val characterY = 200f
         application.player.node.setLocalTranslation(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
         application.player.getPlayerControl().getRigidBody().physicsLocation = Vector3f(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
+
+        application.player.getPlayerControl().equip(Items.GreatSword(application.assetManager))
     }
 
     private fun setUpLight() {

@@ -6,6 +6,7 @@ import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
 import com.jme3.bullet.collision.shapes.CollisionShape
+import com.jme3.bullet.control.GhostControl
 import com.jme3.scene.Node
 import com.jme3.texture.Texture
 
@@ -33,7 +34,7 @@ abstract class WeaponItem(
 
     abstract fun onEquipped()
 
-    fun getCollisionShape(): CollisionShape = CapsuleCollisionShape(0.1f, 1f, 0)
+    abstract fun createCollisionShape(): Node
     fun getDamage(): Float = 10f
 
 }

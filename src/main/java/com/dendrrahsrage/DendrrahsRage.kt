@@ -83,7 +83,7 @@ class DendrrahsRage : SimpleApplication() {
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Cake(assetManager))
-        betterPlayerControl.equip(Items.GreatSword(assetManager))
+        betterPlayerControl.inventory.addItem(Items.GreatSword(assetManager))
     }
 
     companion object {

@@ -7,7 +7,9 @@ import com.jme3.anim.AnimComposer
 import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.Action
 import com.jme3.anim.tween.action.ClipAction
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
 import com.jme3.bullet.control.BetterCharacterControl
+import com.jme3.bullet.control.GhostControl
 import com.jme3.collision.CollisionResults
 import com.jme3.math.Vector3f
 import com.jme3.scene.CameraNode
@@ -24,13 +26,13 @@ class BetterPlayerControl(
     var backward = false
     var leftRotate = false
     var rightRotate = false
-    var isAttacking = false
 
     var health = 100.0
     var hunger = 70.0
 
     val inventory = Inventory()
     private var equipedItem: WeaponItem? = null
+    private var attack: Attack? = null
 
     override fun update(tpf: Float) {
         super.update(tpf)
@@ -62,34 +64,13 @@ class BetterPlayerControl(
 
         hunger -= tpf / 100
 
-//        if(isAttacking) {
-//            val collisionResults = CollisionResults()
-//            physicsSpace.
-//        }
+        attack?.update()
     }
 
     fun attack() {
-        isAttacking = true
-        setAnimation(equipedItem?.getAttack() ?: "attack", "attack", false)
-        physicsSpace.addCollisionListener { evt ->
-            if(evt.nodeA == player.node) {
-                println("it's a me, mario")
-                if(evt.nodeB !is TerrainQuad) {
-                    val collisionResults = CollisionResults()
-                    equipedItem!!.model.collideWith(evt.nodeB, collisionResults)
-                    println(collisionResults.size())
-                    println(collisionResults)
-                }
-            }
-            if(evt.nodeB == player.node) {
-                println("it's a me, mario b, I collided with ${evt.nodeA}")
-                if(evt.nodeA !is TerrainQuad) {
-                    val collisionResults = CollisionResults()
-                    equipedItem!!.model.collideWith(evt.nodeA, collisionResults)
-                    println(collisionResults.size())
-                    println(collisionResults)
-                }
-            }
+        if(attack == null) {
+            setAnimation(equipedItem?.getAttack() ?: "attack", "attack", false)
+            attack = Attack(player)
         }
     }
 
@@ -105,13 +86,16 @@ class BetterPlayerControl(
         unequip()
         equipedItem = item
         getRightHand().attachChild(item.model)
+        item.model.addControl(GhostControl(item.getCollisionShape()))
         item.model.scale(50f)
+        physicsSpace.add(item.model)
         item.onEquipped()
     }
 
     fun unequip() {
         equipedItem?.let {
             it.model.scale(1 / 50f)
+            it.model.removeControl(GhostControl::class.java)
             inventory.addItem(it)
             getRightHand().detachChild(it.model)
         }
@@ -120,5 +104,32 @@ class BetterPlayerControl(
     fun getRightHand() = player.getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
 
     fun getRigidBody() = rigidBody
+
+    class Attack(
+        val player: Player,
+        val ghostControl: GhostControl = player.getPlayerControl().equipedItem!!.model.getControl(GhostControl::class.java)
+    ) {
+
+        val targetsHit = mutableListOf<Node>()
+
+        fun update() {
+            ghostControl.overlappingObjects.filter {
+                it.userObject is Node && !targetsHit.contains(it.userObject) && it.userObject != player.node
+            }.forEach {
+                val node = it.userObject as Node
+                targetsHit.add(node)
+                node.getControl(HealthControl::class.java)?.let { health ->
+                    println("hit "+node)
+                    health.damage(player.getPlayerControl().equipedItem!!.getDamage())
+                }
+            }
+            if(hasAnimationFinished()) {
+                player.getPlayerControl().attack = null
+            }
+        }
+
+        fun hasAnimationFinished(): Boolean = player.getAnimComposer().getCurrentAction("attack") == null
+
+    }
 
 }

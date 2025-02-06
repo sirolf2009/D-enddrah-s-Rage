@@ -141,10 +141,17 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
+        isDebugEnabled = true
+
         val cowNode = Node("Cow")
         val cowModel = application.assetManager.loadModel("Models/cow.glb") as Node
         cowNode.attachChild(cowModel)
         cowNode.addControl(RigidBodyControl(1000f))
+        cowNode.addControl(HealthControl())
+        val cowX = 201f
+        val cowY = 200f
+        cowNode.setLocalTranslation(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
+        cowNode.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
         physicsSpace.add(cowNode)
         stateNode.attachChild(cowNode)
     }

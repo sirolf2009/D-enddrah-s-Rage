@@ -5,40 +5,37 @@
 package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.actionlistener.BetterWASDMovement
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.PlayerControl
+import com.dendrrahsrage.control.*
 import com.dendrrahsrage.control.entity.CowAI
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Items
+import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
+import com.dendrrahsrage.util.Gizmo
 import com.jme3.anim.AnimComposer
-import com.jme3.anim.ArmatureMask
-import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
 import com.jme3.bullet.BulletAppState
 import com.jme3.bullet.control.RigidBodyControl
-import com.jme3.font.BitmapText
 import com.jme3.light.AmbientLight
 import com.jme3.light.DirectionalLight
 import com.jme3.material.Material
 import com.jme3.math.ColorRGBA
-import com.jme3.math.Quaternion
+import com.jme3.math.Vector2f
 import com.jme3.math.Vector3f
-import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
-import com.jme3.scene.control.CameraControl.ControlDirection
-import com.jme3.system.AppSettings
 import com.jme3.terrain.geomipmap.TerrainLodControl
 import com.jme3.terrain.geomipmap.TerrainQuad
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator
 import com.jme3.terrain.heightmap.AbstractHeightMap
-import com.jme3.terrain.heightmap.ImageBasedHeightMap
 import com.jme3.texture.Texture
 import com.jme3.texture.Texture.WrapMode
 
-class DefaultAppState(private val application: DendrrahsRage, private val settings: AppSettings) : BulletAppState() {
+class DefaultAppState(
+    val application: DendrrahsRage
+) : BulletAppState() {
     private val stateNode: Node
     private var player: PlayerControl? = null
     private var betterPlayerControl: BetterPlayerControl? = null
@@ -105,11 +102,12 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         /* 2.a Create a custom height map from an image */
         var heightmap: AbstractHeightMap? = null
-        val heightMapImage: Texture = application.assetManager.loadTexture(
+/*        val heightMapImage: Texture = application.assetManager.loadTexture(
             "Textures/Terrain/splat/mountains512.png"
         )
         heightmap = ImageBasedHeightMap(heightMapImage.getImage())
-
+*/
+        heightmap = JNoiseHeightMap()
         heightmap.load()
 
 
@@ -127,11 +125,11 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
 
         /** 4. We give the terrain its material, position & scale it, and attach it.  */
         terrain.setMaterial(mat_terrain)
-        terrain.setLocalTranslation(40f, -50f, 0f)
-        terrain.setLocalScale(2f, 0.5f, 2f)
+        //terrain.setLocalTranslation(40f, -50f, 0f)
+        terrain.setLocalScale(4f, 4f, 4f)
 
         terrain.addControl(RigidBodyControl(0f))
-        application.rootNode.attachChild(terrain)
+        stateNode.attachChild(terrain)
         physicsSpace.add(terrain)
 
 
@@ -140,92 +138,58 @@ class DefaultAppState(private val application: DendrrahsRage, private val settin
         control.setLodCalculator(DistanceLodCalculator(patchSize, 2.7f)) // patch size, and a multiplier
         terrain.addControl(control)
 
-        setupBetterPlayer()
+        terrain.addControl(GrowPlantsControl(GrowPlantsControl.defaultPlants(application.assetManager), physicsSpace))
 
-        hud = HUD(application, application.getGuiNode(), betterPlayerControl!!)
+        setupBetterPlayer(terrain)
 
-//        val bread = Items.Burger(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-//        bread.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(1f, 0f, 2f)
-//
-//        val cake = Items.Cake(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-//        cake.setLocalTranslation(20f, 0f, 10f)
-//
-//        val greatSword = Items.GreatSword(application.assetManager).spawnItem(application.rootNode, physicsSpace)
-//        greatSword.setLocalTranslation(20f, 0f, 20f)
-    }
+        hud = HUD(application, application.getGuiNode(), application.player)
 
-    fun setupBetterPlayer() {
-        val characterNode = Node("character node")
-        characterNode.setLocalTranslation(0f, 2f, 0f)
-
-        val model = application.assetManager.loadModel("Models/character.glb") as Node
-        characterNode.attachChild(model)
-        val animComposer = model.getChild(0).getControl(AnimComposer::class.java)
-        animComposer.animClipsNames.forEach { animComposer.addAction(it, ClipAction(animComposer.getAnimClip(it))) }
-        animComposer.setCurrentAction("idle")
-        val attackMask = ArmatureMask(model.getChild(0).getControl(SkinningControl::class.java).armature)
-        attackMask.removeJoints(model.getChild(0).getControl(SkinningControl::class.java).armature, "mixamorig1:LeftUpLeg", "mixamorig1:RightUpLeg")
-        animComposer.makeLayer("attack", attackMask)
-
-        application.camera.setLocation(Vector3f(10f, 6f, -5f))
-        val camNode = CameraNode("CamNode", application.camera)
-        camNode.setControlDir(ControlDirection.SpatialToCamera)
-        camNode.setLocalTranslation(Vector3f(0f, 2f, -6f))
-
-        betterPlayerControl = BetterPlayerControl(characterNode, camNode, animComposer)
-        characterNode.addControl(betterPlayerControl)
-        physicsSpace.add(betterPlayerControl)
-
-        betterPlayerControl!!.equip(Items.GreatSword(application.assetManager))
+        application.rootNode.attachChild(stateNode)
 
         isDebugEnabled = true
 
-        val cowNode = Node("Cow")
+        val cowNode = Node("cow")
         val cowModel = application.assetManager.loadModel("Models/cow.glb") as Node
+        val animComposer = cowModel.getChild(0).getControl(AnimComposer::class.java)
+        animComposer.addAction("Walk", ClipAction(animComposer.getAnimClip("Walk")))
         cowNode.attachChild(cowModel)
         cowNode.addControl(RigidBodyControl(1000f))
+        cowNode.addControl(HealthControl(application.assetManager))
+        cowNode.addControl(CowAI(terrain))
+        val cowX = 201f
+        val cowY = 200f
+        cowNode.setLocalTranslation(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
+        cowNode.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
+
+
+        cowNode.attachChild(Gizmo(application.assetManager))
+
         physicsSpace.add(cowNode)
-        application.rootNode.attachChild(cowNode)
-
-        val quat = Quaternion()
-        // These coordinates are local, the camNode is attached to the character node!
-        quat.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y)
-        camNode.localRotation = quat
-        characterNode.attachChild(camNode)
-
-        // Disable by default, can be enabled via keyboard shortcut
-        application.flyByCamera.isEnabled = false
-        camNode.isEnabled = true
-        application.inputManager.isCursorVisible = false
-
-        BetterWASDMovement(betterPlayerControl!!, application.rootNode, application.guiNode, this, application.inputManager).setupKeys()
-        application.rootNode.attachChild(characterNode)
-
-        initCrossHairs()
+        stateNode.attachChild(cowNode)
     }
 
-    private fun initCrossHairs() {
-        application.setDisplayStatView(false)
-        val guiFont = application.assetManager.loadFont("Interface/Fonts/Default.fnt")
-        val ch: BitmapText = BitmapText(guiFont)
-        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2f)
-        ch.setText("+") // crosshairs
-        ch.setLocalTranslation( // center
-            settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0f
-        )
-        application.guiNode.attachChild(ch)
+    fun setupBetterPlayer(terrainQuad: TerrainQuad) {
+        stateNode.attachChild(application.player.node)
+        physicsSpace.add(application.player.getPlayerControl())
+
+        val characterX = 200f
+        val characterY = 200f
+        application.player.node.setLocalTranslation(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
+        application.player.getPlayerControl().getRigidBody().physicsLocation = Vector3f(characterX, terrainQuad.getHeight(Vector2f(characterX, characterY)) + 1, characterY)
+
+        application.player.getPlayerControl().equip(Items.GreatSword(application.assetManager))
     }
 
     private fun setUpLight() {
         // We add light so we see the scene
         val al = AmbientLight()
         al.color = ColorRGBA.White.mult(1.3f)
-        application.getRootNode().addLight(al)
+        stateNode.addLight(al)
 
         val dl = DirectionalLight()
         dl.color = ColorRGBA.White
         dl.direction = Vector3f(2.8f, -2.8f, -2.8f).normalizeLocal()
-        application.getRootNode().addLight(dl)
+        stateNode.addLight(dl)
     }
 
     override fun cleanup() {

@@ -1,12 +1,20 @@
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.WeaponItem
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.Action
 import com.jme3.anim.tween.action.ClipAction
+import com.jme3.app.Application
+import com.jme3.asset.DesktopAssetManager
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
+import com.jme3.bullet.collision.shapes.CollisionShape
 import com.jme3.bullet.control.BetterCharacterControl
+import com.jme3.bullet.control.GhostControl
+import com.jme3.bullet.util.CollisionShapeFactory
 import com.jme3.collision.CollisionResults
 import com.jme3.math.Vector3f
 import com.jme3.scene.CameraNode
@@ -14,9 +22,7 @@ import com.jme3.scene.Node
 import com.jme3.terrain.geomipmap.TerrainQuad
 
 class BetterPlayerControl(
-    val characterNode: Node,
-    val camera: CameraNode,
-    private val animationComposer: AnimComposer
+    val player: Player
 ) : BetterCharacterControl(0.3f, 1.9f, 80f) {
 
     var leftStrafe = false
@@ -25,21 +31,21 @@ class BetterPlayerControl(
     var backward = false
     var leftRotate = false
     var rightRotate = false
-    var isAttacking = false
 
     var health = 100.0
     var hunger = 70.0
 
     val inventory = Inventory()
-    private var equipedItem: WeaponItem? = null
+    private var equipedItem: EquipmentNode? = null
+    private var attack: Attack? = null
 
     override fun update(tpf: Float) {
         super.update(tpf)
 
         // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        val modelForwardDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_Z)
-        val modelLeftDir: Vector3f = characterNode.worldRotation.mult(Vector3f.UNIT_X)
+        val modelForwardDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_Z)
+        val modelLeftDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_X)
 
         // WalkDirection is global!
         // You *can* make your character fly with this.
@@ -50,77 +56,108 @@ class BetterPlayerControl(
             walkDirection.addLocal(modelLeftDir.negate().multLocal(3f))
         }
         if (forward) {
-            setAnimation(equipedItem?.getWalkForward() ?: "walkForward")
+            setAnimation(equipedItem?.item?.getWalkForward() ?: "walkForward")
             walkDirection.addLocal(modelForwardDir.mult(6f))
         } else if (backward) {
             walkDirection.addLocal(modelForwardDir.negate().multLocal(3f))
         } else {
-            setAnimation(equipedItem?.getIdle() ?: "idle")
+            setAnimation(equipedItem?.item?.getIdle() ?: "idle")
         }
         setWalkDirection(walkDirection)
 
-        camera.lookAt(characterNode.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+        player.getCameraNode().lookAt(player.node.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
 
         hunger -= tpf / 100
 
-//        if(isAttacking) {
-//            val collisionResults = CollisionResults()
-//            physicsSpace.
-//        }
+        attack?.update()
     }
 
     fun attack() {
-        isAttacking = true
-        setAnimation(equipedItem?.getAttack() ?: "attack", "attack", false)
-        physicsSpace.addCollisionListener { evt ->
-            if(evt.nodeA == characterNode) {
-                println("it's a me, mario")
-                if(evt.nodeB !is TerrainQuad) {
-                    val collisionResults = CollisionResults()
-                    equipedItem!!.model.collideWith(evt.nodeB, collisionResults)
-                    println(collisionResults.size())
-                    println(collisionResults)
-                }
-            }
-            if(evt.nodeB == characterNode) {
-                println("it's a me, mario b, I collided with ${evt.nodeA}")
-                if(evt.nodeA !is TerrainQuad) {
-                    val collisionResults = CollisionResults()
-                    equipedItem!!.model.collideWith(evt.nodeA, collisionResults)
-                    println(collisionResults.size())
-                    println(collisionResults)
-                }
-            }
+        if(attack == null) {
+            setAnimation(equipedItem?.item?.getAttack() ?: "attack", "attack", false)
+            attack = Attack(player)
         }
     }
 
     fun setAnimation(name: String, layer: String = "Default", loop: Boolean = true): ClipAction {
-        val action = animationComposer.getCurrentAction(layer) as? ClipAction
+        val action = player.getAnimComposer().getCurrentAction(layer) as? ClipAction
         if (action == null || !action.animClip.name.equals(name)) {
-            return animationComposer.setCurrentAction(name, layer, loop) as ClipAction
+            return player.getAnimComposer().setCurrentAction(name, layer, loop) as ClipAction
         }
         return action
     }
 
     fun equip(item: WeaponItem) {
         unequip()
-        equipedItem = item
-        getRightHand().attachChild(item.model)
+
         item.model.scale(50f)
+
+        val equipmentCollisionNode = item.createCollisionShape()
+
+        val equipmentNode = EquipmentNode(
+            "rightHandEquipment",
+            item,
+            item.model,
+            equipmentCollisionNode
+        )
+        equipedItem = equipmentNode
+        getRightHand().attachChild(equipmentNode)
+        physicsSpace.add(equipmentCollisionNode)
         item.onEquipped()
     }
 
     fun unequip() {
         equipedItem?.let {
             it.model.scale(1 / 50f)
-            inventory.addItem(it)
-            getRightHand().detachChild(it.model)
+            it.collision.removeControl(GhostControl::class.java)
+            inventory.addItem(it.item)
+            getRightHand().detachChild(it)
         }
     }
 
-    fun getRightHand() = getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
+    fun getRightHand() = player.getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
 
-    fun getSkinningControl() =
-        ((characterNode.getChild("Scene") as Node).getChild(0) as Node).getControl(SkinningControl::class.java)
+    fun getRigidBody() = rigidBody
+
+    class Attack(
+        val player: Player,
+        val ghostControl: GhostControl = player.getPlayerControl().equipedItem!!.collision.getControl(GhostControl::class.java)
+    ) {
+
+        val targetsHit = mutableListOf<Node>()
+
+        fun update() {
+            ghostControl.overlappingObjects.filter {
+                it.userObject is Node && !targetsHit.contains(it.userObject) && it.userObject != player.node
+            }.forEach {
+                val node = it.userObject as Node
+                targetsHit.add(node)
+                node.getControl(HealthControl::class.java)?.let { health ->
+                    println("hit "+node)
+                    health.damage(player.getPlayerControl().equipedItem!!.item.getDamage())
+                }
+            }
+            if(hasAnimationFinished()) {
+                player.getPlayerControl().attack = null
+            }
+        }
+
+        fun hasAnimationFinished(): Boolean = player.getAnimComposer().getCurrentAction("attack") == null
+
+    }
+
+    data class EquipmentNode(
+        private val name: String,
+        val item: WeaponItem,
+        val model: Node,
+        val collision: Node
+    ): Node(name) {
+
+        init {
+            attachChild(model)
+            attachChild(collision)
+        }
+
+    }
 
 }

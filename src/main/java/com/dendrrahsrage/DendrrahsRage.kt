@@ -1,12 +1,22 @@
 package com.dendrrahsrage
 
 import com.dendrrahsrage.appstate.DefaultAppState
+import com.dendrrahsrage.appstate.PlayerMovementAppState
+import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.control.CurseControl
 import com.dendrrahsrage.item.Items
+import com.jme3.anim.AnimComposer
+import com.jme3.anim.ArmatureMask
+import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.SimpleApplication
+import com.jme3.math.Vector2f
+import com.jme3.math.Vector3f
 import com.jme3.renderer.RenderManager
+import com.jme3.scene.CameraNode
+import com.jme3.scene.Node
+import com.jme3.scene.control.CameraControl.ControlDirection
 import com.jme3.system.AppSettings
 import com.simsilica.lemur.GuiGlobals
-import com.simsilica.lemur.OptionPanelState
 import com.simsilica.lemur.style.BaseStyles
 
 
@@ -16,28 +26,75 @@ import com.simsilica.lemur.style.BaseStyles
  */
 class DendrrahsRage : SimpleApplication() {
 
+    lateinit var player: Player
+    var mouseCapture = true
+
     override fun simpleInitApp() {
+        instance = this
         GuiGlobals.initialize(this)
         GuiGlobals.getInstance().isCursorEventsEnabled = false
         BaseStyles.loadGlassStyle();
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass")
 
-        getStateManager().attach(DefaultAppState(this, settings))
+        createPlayer()
+
+        getStateManager().attach(DefaultAppState(this))
+        getStateManager().attach(PlayerMovementAppState(this))
     }
 
     override fun simpleUpdate(tpf: Float) {
-        //this method will be called every game tick and can be used to make updates
+        inputManager.isCursorVisible = !mouseCapture
     }
 
     override fun simpleRender(rm: RenderManager) {
         //add render code here (if any)
     }
 
+    fun getSettings() = settings
+
+    fun createPlayer() {
+        val characterNode = Node("character node")
+
+        val model = assetManager.loadModel("Models/character.glb") as Node
+        characterNode.attachChild(model)
+        val animComposer = model.getChild(0).getControl(AnimComposer::class.java)
+        animComposer.addAction("walkForward", ClipAction(animComposer.getAnimClip("walkForward")))
+        animComposer.addAction("idle", ClipAction(animComposer.getAnimClip("idle")))
+        animComposer.setCurrentAction("idle")
+
+        camera.setLocation(Vector3f(10f, 6f, -5f))
+        val camNode = CameraNode(Player.CameraNodeName, camera)
+        camNode.setControlDir(ControlDirection.SpatialToCamera)
+        camNode.setLocalTranslation(Vector3f(0f, 2f, -6f))
+        characterNode.attachChild(camNode)
+
+        characterNode.addControl(CurseControl())
+
+        player = Player(characterNode)
+
+        val betterPlayerControl = BetterPlayerControl(player)
+        characterNode.addControl(betterPlayerControl)
+
+        val attackMask = ArmatureMask(player.getSkinningControl().armature)
+        attackMask.removeJoints(player.getSkinningControl().armature, "mixamorig1:LeftUpLeg", "mixamorig1:RightUpLeg")
+        animComposer.makeLayer("attack", attackMask)
+
+        betterPlayerControl.inventory.addItem(Items.Burger(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Cake(assetManager))
+        betterPlayerControl.inventory.addItem(Items.GreatSword(assetManager))
+    }
+
     companion object {
-        @kotlin.jvm.JvmStatic
+
+        var instance: DendrrahsRage? = null
+
+        @JvmStatic
         fun main(args: Array<String>) {
             val app = DendrrahsRage()
-            app.isShowSettings = false //Settings dialog not supported on mac
+            app.isShowSettings = false
             val settings = AppSettings(true)
             settings.title = "D'endrrah's Rage"
             settings.setWindowSize(1024, 800)

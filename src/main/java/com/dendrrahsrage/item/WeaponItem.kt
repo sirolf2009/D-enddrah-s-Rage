@@ -1,31 +1,40 @@
 package com.dendrrahsrage.item
 
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
+import com.jme3.bullet.collision.shapes.CollisionShape
+import com.jme3.bullet.control.GhostControl
 import com.jme3.scene.Node
+import com.jme3.texture.Texture
 
 abstract class WeaponItem(
     name: String,
     model: Node,
+    icon: Texture,
     weight: Float,
-) : Item(name, model, weight) {
+) : Item(name, model, icon, weight) {
 
     override fun contextMenuItems(
-        betterPlayerControl: BetterPlayerControl,
+        player: Player,
         inventoryView: InventoryView
     ): List<ContextMenuAction> =
         listOf(
             ContextMenuAction("Equip") {
-                betterPlayerControl.inventory.removeItem(this)
-                betterPlayerControl.equip(this)
+                player.getPlayerControl().inventory.removeItem(this)
+                player.getPlayerControl().equip(this)
             }
-        ) + super.contextMenuItems(betterPlayerControl, inventoryView)
+        ) + super.contextMenuItems(player, inventoryView)
 
     abstract fun getWalkForward(): String
     abstract fun getIdle(): String
     abstract fun getAttack(): String
 
     abstract fun onEquipped()
+
+    abstract fun createCollisionShape(): Node
+    fun getDamage(): Float = 10f
 
 }

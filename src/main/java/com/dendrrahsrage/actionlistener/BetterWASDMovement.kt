@@ -1,25 +1,30 @@
 package com.dendrrahsrage.actionlistener
 
+import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.Player
 import com.dendrrahsrage.appstate.DefaultAppState
 import com.dendrrahsrage.control.BetterPlayerControl
 import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.gui.InventoryView
+import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.collision.CollisionResults
 import com.jme3.input.CameraInput
 import com.jme3.input.InputManager
 import com.jme3.input.KeyInput
 import com.jme3.input.MouseInput
 import com.jme3.input.controls.*
-import com.jme3.math.*
+import com.jme3.math.Matrix3f
+import com.jme3.math.Ray
+import com.jme3.math.Vector3f
 import com.jme3.scene.Node
 import com.simsilica.lemur.GuiGlobals
 
 
 class BetterWASDMovement(
-    private val playerControl: BetterPlayerControl,
+    private val player: Player,
     private val sceneNode: Node,
     private val guiNode: Node,
-    private val appState: DefaultAppState,
+    private val application: DendrrahsRage,
     private val inputManager: InputManager
 ): ActionListener, AnalogListener {
 
@@ -81,57 +86,59 @@ class BetterWASDMovement(
 
     override fun onAction(binding: String?, value: Boolean, tpf: Float) {
         if (binding.equals("Strafe Left")) {
-            playerControl.leftStrafe = value
+            player.getPlayerControl().leftStrafe = value
         } else if (binding.equals("Strafe Right")) {
-            playerControl.rightStrafe = value
+            player.getPlayerControl().rightStrafe = value
         } else if (binding.equals("Rotate Left")) {
-            playerControl.leftRotate = value
+            player.getPlayerControl().leftRotate = value
         } else if (binding.equals("Rotate Right")) {
-            playerControl.rightRotate = value
+            player.getPlayerControl().rightRotate = value
         } else if (binding.equals("Walk Forward")) {
-            playerControl.forward = value
+            player.getPlayerControl().forward = value
         } else if (binding.equals("Walk Backward")) {
-            playerControl.backward = value
+            player.getPlayerControl().backward = value
         } else if (binding.equals("Jump")) {
-            playerControl.jump()
+            player.getPlayerControl().jump()
         } else if (binding.equals("Duck")) {
             if (value) {
-                playerControl.isDucked = true
+                player.getPlayerControl().isDucked = true
             } else {
-                playerControl.isDucked = false
+                player.getPlayerControl().isDucked = false
             }
         } else if (binding.equals("Pickup") && !value) {
             val results = CollisionResults()
-            val ray = Ray(playerControl.camera.camera.getLocation(), playerControl.camera.camera.getDirection())
+            val ray = Ray(player.getCameraNode().camera.getLocation(), player.getCameraNode().camera.getDirection())
             sceneNode.collideWith(ray, results)
 
             if (results.size() > 0) {
                 val closest = results.closestCollision
                 if(closest.distance < 15f) {
                     foodItem(closest.geometry.parent)?.let {
+                        val rigidBodyControl = it.getControl(RigidBodyControl::class.java)
                         val item = it.getControl(FoodControl::class.java).item
-                        if(playerControl.inventory.addItem(item)) {
+                        if(player.getPlayerControl().inventory.addItem(item)) {
                             it.parent.detachChild(it)
+                            rigidBodyControl.physicsSpace.remove(rigidBodyControl)
                         }
                     }
                 }
             }
         } else if(binding.equals("Inventory") && !value) {
             if(inventoryView == null) {
-                inventoryView = InventoryView(inputManager, playerControl, playerControl.inventory)
+                inventoryView = InventoryView(inputManager, player, player.getPlayerControl().inventory)
                 inventoryView!!.setLocalTranslation(20f, 700f, 0f)
                 guiNode.attachChild(inventoryView)
-                appState.mouseCapture = false
+                application.mouseCapture = false
                 GuiGlobals.getInstance().isCursorEventsEnabled = true
             } else {
                 inventoryView!!.cleanup()
                 guiNode.detachChild(inventoryView)
                 inventoryView = null
-                appState.mouseCapture = true
+                application.mouseCapture = true
                 GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
         } else if(binding.equals("Attack") && !value) {
-            playerControl.attack()
+            player.getPlayerControl().attack()
         }
     }
 
@@ -152,25 +159,25 @@ class BetterWASDMovement(
         val mat = Matrix3f()
         mat.fromAngleNormalAxis(rotationSpeedX * value, axis)
 
-        val viewDir: Vector3f = playerControl.viewDirection
+        val viewDir: Vector3f = player.getPlayerControl().viewDirection
 
         mat.mult(viewDir, viewDir)
 
-        playerControl.viewDirection = viewDir
+        player.getPlayerControl().viewDirection = viewDir
     }
 
     override fun onAnalog(name: String?, value: Float, tpf: Float) {
-        if (appState.mouseCapture) {
+        if (application.mouseCapture) {
             if ((name == CameraInput.FLYCAM_LEFT)) {
                 rotateCamera(value, Vector3f.UNIT_Y)
             } else if ((name == CameraInput.FLYCAM_RIGHT)) {
                 rotateCamera(-value, Vector3f.UNIT_Y)
             } else if ((name == CameraInput.FLYCAM_UP)) {
-                playerControl.camera.localTranslation =
-                    playerControl.camera.localTranslation.add(0f, -value * rotationSpeedY, 0f)
+                player.getCameraNode().localTranslation =
+                    player.getCameraNode().localTranslation.add(0f, -value * rotationSpeedY, 0f)
             } else if ((name == CameraInput.FLYCAM_DOWN)) {
-                playerControl.camera.localTranslation =
-                    playerControl.camera.localTranslation.add(0f, value * rotationSpeedY, 0f)
+                player.getCameraNode().localTranslation =
+                    player.getCameraNode().localTranslation.add(0f, value * rotationSpeedY, 0f)
             }
         }
     }

@@ -33,7 +33,7 @@ class CowAI(val terrain: TerrainQuad) : AbstractControl() {
                 val point = getRandomTarget()
                 moveToTarget = MoveToTarget(
                     target = point,
-                    terrain = terrain,
+                    torque = 5000f,
                     arrivalDistance = 3f,
                     onArrived = {
                         spatial.removeControl(moveToTarget)
@@ -55,7 +55,7 @@ class CowAI(val terrain: TerrainQuad) : AbstractControl() {
     }
 
     fun getRandomTarget(): Vector3f {
-        val range = 100
+        val range = 10
         val x = spatial.worldTranslation.x + (Random.nextInt(range) - range/2f)
         val y = spatial.worldTranslation.y + (Random.nextInt(range) - range/2f)
         val height = terrain.getHeight(Vector2f(x, y))

@@ -12,6 +12,7 @@ import com.dendrrahsrage.control.entity.CowAI
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Items
 import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
+import com.dendrrahsrage.util.Gizmo
 import com.jme3.anim.AnimComposer
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.app.Application
@@ -159,6 +160,10 @@ class DefaultAppState(
         val cowY = 200f
         cowNode.setLocalTranslation(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
         cowNode.getControl(RigidBodyControl::class.java).physicsLocation = Vector3f(cowX, terrain.getHeight(Vector2f(cowX, cowY)) + 1, cowY)
+
+
+        cowNode.attachChild(Gizmo(application.assetManager))
+
         physicsSpace.add(cowNode)
         stateNode.attachChild(cowNode)
     }

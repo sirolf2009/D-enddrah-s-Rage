@@ -1,28 +1,17 @@
 package com.dendrrahsrage.control
 
-import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.Player
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.WeaponItem
-import com.jme3.anim.AnimComposer
-import com.jme3.anim.SkinningControl
-import com.jme3.anim.tween.action.Action
 import com.jme3.anim.tween.action.ClipAction
-import com.jme3.app.Application
-import com.jme3.asset.DesktopAssetManager
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
-import com.jme3.bullet.collision.shapes.CollisionShape
 import com.jme3.bullet.control.BetterCharacterControl
 import com.jme3.bullet.control.GhostControl
-import com.jme3.bullet.util.CollisionShapeFactory
-import com.jme3.collision.CollisionResults
 import com.jme3.math.Vector3f
-import com.jme3.scene.CameraNode
 import com.jme3.scene.Node
-import com.jme3.terrain.geomipmap.TerrainQuad
+import com.jme3.scene.Spatial
 
 class BetterPlayerControl(
-    val player: Player
+    val player: EntityPlayer
 ) : BetterCharacterControl(0.3f, 1.9f, 80f) {
 
     var leftStrafe = false
@@ -44,8 +33,8 @@ class BetterPlayerControl(
 
         // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        val modelForwardDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_Z)
-        val modelLeftDir: Vector3f = player.node.worldRotation.mult(Vector3f.UNIT_X)
+        val modelForwardDir: Vector3f = player.worldRotation.mult(Vector3f.UNIT_Z)
+        val modelLeftDir: Vector3f = player.worldRotation.mult(Vector3f.UNIT_X)
 
         // WalkDirection is global!
         // You *can* make your character fly with this.
@@ -65,7 +54,7 @@ class BetterPlayerControl(
         }
         setWalkDirection(walkDirection)
 
-        player.getCameraNode().lookAt(player.node.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
+        player.camNode.lookAt(player.getWorldTranslation().add(Vector3f(0f, 2f, 0f)), Vector3f.UNIT_Y)
 
         hunger -= tpf / 100
 
@@ -80,11 +69,16 @@ class BetterPlayerControl(
     }
 
     fun setAnimation(name: String, layer: String = "Default", loop: Boolean = true): ClipAction {
-        val action = player.getAnimComposer().getCurrentAction(layer) as? ClipAction
+        val action = player.animComposer.getCurrentAction(layer) as? ClipAction
         if (action == null || !action.animClip.name.equals(name)) {
-            return player.getAnimComposer().setCurrentAction(name, layer, loop) as ClipAction
+            return player.animComposer.setCurrentAction(name, layer, loop) as ClipAction
         }
         return action
+    }
+
+    override fun setSpatial(spatial: Spatial?) {
+        super.setSpatial(spatial)
+        rigidBody.friction = 2f
     }
 
     fun equip(item: WeaponItem) {
@@ -115,34 +109,34 @@ class BetterPlayerControl(
         }
     }
 
-    fun getRightHand() = player.getSkinningControl().getAttachmentsNode("mixamorig1:RightHand")
+    fun getRightHand() = player.skinningControl.getAttachmentsNode("mixamorig1:RightHand")
 
     fun getRigidBody() = rigidBody
 
     class Attack(
-        val player: Player,
-        val ghostControl: GhostControl = player.getPlayerControl().equipedItem!!.collision.getControl(GhostControl::class.java)
+        val player: EntityPlayer,
+        val ghostControl: GhostControl = player.betterPlayerControl.equipedItem!!.collision.getControl(GhostControl::class.java)
     ) {
 
         val targetsHit = mutableListOf<Node>()
 
         fun update() {
             ghostControl.overlappingObjects.filter {
-                it.userObject is Node && !targetsHit.contains(it.userObject) && it.userObject != player.node
+                it.userObject is Node && !targetsHit.contains(it.userObject) && it.userObject != player
             }.forEach {
                 val node = it.userObject as Node
                 targetsHit.add(node)
                 node.getControl(HealthControl::class.java)?.let { health ->
                     println("hit "+node)
-                    health.damage(player.getPlayerControl().equipedItem!!.item.getDamage())
+                    health.damage(player.betterPlayerControl.equipedItem!!.item.getDamage())
                 }
             }
             if(hasAnimationFinished()) {
-                player.getPlayerControl().attack = null
+                player.betterPlayerControl.attack = null
             }
         }
 
-        fun hasAnimationFinished(): Boolean = player.getAnimComposer().getCurrentAction("attack") == null
+        fun hasAnimationFinished(): Boolean = player.animComposer.getCurrentAction("attack") == null
 
     }
 

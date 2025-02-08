@@ -1,24 +1,25 @@
 package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.Player
 import com.dendrrahsrage.actionlistener.BetterWASDMovement
+import com.dendrrahsrage.entity.EntityPlayer
 import com.jme3.app.state.AbstractAppState
 import com.jme3.app.state.AppStateManager
 import com.jme3.font.BitmapText
 
 class PlayerMovementAppState(
-    val application: DendrrahsRage
+    val application: DendrrahsRage,
+    val player: EntityPlayer
 ): AbstractAppState() {
 
     override fun stateAttached(stateManager: AppStateManager?) {
         super.stateAttached(stateManager)
 
         application.flyByCamera.isEnabled = false
-        application.player.getCameraNode().isEnabled = true
+        player.camNode.isEnabled = true
         application.inputManager.isCursorVisible = false
 
-        BetterWASDMovement(application.player, application.rootNode, application.guiNode, application, application.inputManager).setupKeys()
+        BetterWASDMovement(player, application.rootNode, application.guiNode, application, application.inputManager).setupKeys()
 
         initCrossHairs()
     }

@@ -9,7 +9,6 @@ import com.jme3.renderer.RenderManager
 import com.jme3.renderer.ViewPort
 import com.jme3.scene.Spatial
 import com.jme3.scene.control.AbstractControl
-import com.jme3.terrain.geomipmap.TerrainQuad
 import kotlin.math.abs
 import kotlin.math.atan2
 
@@ -17,7 +16,8 @@ class MoveToTarget(
     val target: Vector3f,
     val arrivalDistance: Float,
     val torque: Float = 1000f,
-    val onArrived: (MoveToTarget) -> Unit = { it.spatial.removeControl(it) }
+    val force: Float = 1f,
+    val onArrived: (MoveToTarget) -> Unit = { it.removeFromSpatial() }
 ) : AbstractControl() {
 
     private var rigidBodyControl: RigidBodyControl? = null
@@ -28,7 +28,7 @@ class MoveToTarget(
             if(distance <= arrivalDistance) {
                 onArrived.invoke(this)
             } else {
-                val forward = spatial.localRotation.mult(Vector3f.UNIT_X)
+                val forward = spatial.localRotation.mult(Vector3f.UNIT_X).mult(force)
                 rigidBodyControl.linearVelocity = forward
 
                 val angleTowardsTarget = abs(
@@ -42,6 +42,10 @@ class MoveToTarget(
                 rigidBodyControl.applyTorque(Vector3f(0f, torque, 0f))
             }
         }
+    }
+
+    fun removeFromSpatial() {
+        spatial.removeControl(this)
     }
 
     override fun setSpatial(spatial: Spatial?) {

@@ -1,9 +1,7 @@
 package com.dendrrahsrage.actionlistener
 
 import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.Player
-import com.dendrrahsrage.appstate.DefaultAppState
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.gui.InventoryView
 import com.jme3.bullet.control.RigidBodyControl
@@ -21,7 +19,7 @@ import com.simsilica.lemur.GuiGlobals
 
 
 class BetterWASDMovement(
-    private val player: Player,
+    private val player: EntityPlayer,
     private val sceneNode: Node,
     private val guiNode: Node,
     private val application: DendrrahsRage,
@@ -86,28 +84,28 @@ class BetterWASDMovement(
 
     override fun onAction(binding: String?, value: Boolean, tpf: Float) {
         if (binding.equals("Strafe Left")) {
-            player.getPlayerControl().leftStrafe = value
+            player.betterPlayerControl.leftStrafe = value
         } else if (binding.equals("Strafe Right")) {
-            player.getPlayerControl().rightStrafe = value
+            player.betterPlayerControl.rightStrafe = value
         } else if (binding.equals("Rotate Left")) {
-            player.getPlayerControl().leftRotate = value
+            player.betterPlayerControl.leftRotate = value
         } else if (binding.equals("Rotate Right")) {
-            player.getPlayerControl().rightRotate = value
+            player.betterPlayerControl.rightRotate = value
         } else if (binding.equals("Walk Forward")) {
-            player.getPlayerControl().forward = value
+            player.betterPlayerControl.forward = value
         } else if (binding.equals("Walk Backward")) {
-            player.getPlayerControl().backward = value
+            player.betterPlayerControl.backward = value
         } else if (binding.equals("Jump")) {
-            player.getPlayerControl().jump()
+            player.betterPlayerControl.jump()
         } else if (binding.equals("Duck")) {
             if (value) {
-                player.getPlayerControl().isDucked = true
+                player.betterPlayerControl.isDucked = true
             } else {
-                player.getPlayerControl().isDucked = false
+                player.betterPlayerControl.isDucked = false
             }
         } else if (binding.equals("Pickup") && !value) {
             val results = CollisionResults()
-            val ray = Ray(player.getCameraNode().camera.getLocation(), player.getCameraNode().camera.getDirection())
+            val ray = Ray(player.camNode.camera.getLocation(), player.camNode.camera.getDirection())
             sceneNode.collideWith(ray, results)
 
             if (results.size() > 0) {
@@ -116,7 +114,7 @@ class BetterWASDMovement(
                     foodItem(closest.geometry.parent)?.let {
                         val rigidBodyControl = it.getControl(RigidBodyControl::class.java)
                         val item = it.getControl(FoodControl::class.java).item
-                        if(player.getPlayerControl().inventory.addItem(item)) {
+                        if(player.betterPlayerControl.inventory.addItem(item)) {
                             it.parent.detachChild(it)
                             rigidBodyControl.physicsSpace.remove(rigidBodyControl)
                         }
@@ -125,7 +123,7 @@ class BetterWASDMovement(
             }
         } else if(binding.equals("Inventory") && !value) {
             if(inventoryView == null) {
-                inventoryView = InventoryView(inputManager, player, player.getPlayerControl().inventory)
+                inventoryView = InventoryView(inputManager, player, player.betterPlayerControl.inventory)
                 inventoryView!!.setLocalTranslation(20f, 700f, 0f)
                 guiNode.attachChild(inventoryView)
                 application.mouseCapture = false
@@ -138,7 +136,7 @@ class BetterWASDMovement(
                 GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
         } else if(binding.equals("Attack") && !value) {
-            player.getPlayerControl().attack()
+            player.betterPlayerControl.attack()
         }
     }
 
@@ -159,11 +157,11 @@ class BetterWASDMovement(
         val mat = Matrix3f()
         mat.fromAngleNormalAxis(rotationSpeedX * value, axis)
 
-        val viewDir: Vector3f = player.getPlayerControl().viewDirection
+        val viewDir: Vector3f = player.betterPlayerControl.viewDirection
 
         mat.mult(viewDir, viewDir)
 
-        player.getPlayerControl().viewDirection = viewDir
+        player.betterPlayerControl.viewDirection = viewDir
     }
 
     override fun onAnalog(name: String?, value: Float, tpf: Float) {
@@ -173,11 +171,11 @@ class BetterWASDMovement(
             } else if ((name == CameraInput.FLYCAM_RIGHT)) {
                 rotateCamera(-value, Vector3f.UNIT_Y)
             } else if ((name == CameraInput.FLYCAM_UP)) {
-                player.getCameraNode().localTranslation =
-                    player.getCameraNode().localTranslation.add(0f, -value * rotationSpeedY, 0f)
+                player.camNode.localTranslation =
+                    player.camNode.localTranslation.add(0f, -value * rotationSpeedY, 0f)
             } else if ((name == CameraInput.FLYCAM_DOWN)) {
-                player.getCameraNode().localTranslation =
-                    player.getCameraNode().localTranslation.add(0f, value * rotationSpeedY, 0f)
+                player.camNode.localTranslation =
+                    player.camNode.localTranslation.add(0f, value * rotationSpeedY, 0f)
             }
         }
     }

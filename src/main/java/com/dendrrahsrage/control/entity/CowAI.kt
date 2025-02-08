@@ -16,8 +16,6 @@ import com.jme3.scene.Node
 import com.jme3.scene.Spatial
 import com.jme3.scene.control.AbstractControl
 import com.jme3.terrain.geomipmap.TerrainQuad
-import kotlin.math.abs
-import kotlin.math.atan2
 import kotlin.random.Random
 
 class CowAI(val terrain: TerrainQuad) : AbstractControl() {
@@ -28,7 +26,6 @@ class CowAI(val terrain: TerrainQuad) : AbstractControl() {
 
     override fun controlUpdate(tpf: Float) {
         if(moveToTarget == null) {
-            animComposer?.removeAction("Walk")
             if(Random.nextInt(500) <= tpf) {
                 val point = getRandomTarget()
                 moveToTarget = MoveToTarget(
@@ -36,7 +33,8 @@ class CowAI(val terrain: TerrainQuad) : AbstractControl() {
                     torque = 5000f,
                     arrivalDistance = 3f,
                     onArrived = {
-                        spatial.removeControl(moveToTarget)
+                        it.removeFromSpatial()
+                        animComposer?.removeAction("Walk")
                     }
                 )
                 spatial.addControl(moveToTarget)

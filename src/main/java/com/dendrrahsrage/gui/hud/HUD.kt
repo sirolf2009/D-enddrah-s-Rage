@@ -4,8 +4,7 @@
  */
 package com.dendrrahsrage.gui.hud
 
-import com.dendrrahsrage.Player
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.jme3.app.Application
 import com.jme3.math.Vector3f
 import com.jme3.scene.Node
@@ -16,7 +15,7 @@ import com.simsilica.lemur.ProgressBar
 class HUD(
     app: Application,
     guiNode: Node,
-    val player: Player,
+    val player: EntityPlayer,
 ) {
 
     val weight = Label("Total weight")
@@ -51,9 +50,9 @@ class HUD(
     }
 
     fun update() {
-        hp.progressValue = player.getPlayerControl().health
-        hunger.progressValue = player.getPlayerControl().hunger
-        weight.text = player.getPlayerControl().inventory.currentWeight.toString()+"kg"
-        location.text = "${player.node.worldTranslation}"
+        hp.progressValue = player.betterPlayerControl.health
+        hunger.progressValue = player.betterPlayerControl.hunger
+        weight.text = player.betterPlayerControl.inventory.currentWeight.toString()+"kg"
+        location.text = "${player.worldTranslation}"
     }
 }

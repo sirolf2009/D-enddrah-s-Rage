@@ -1,12 +1,8 @@
 package com.dendrrahsrage.item
 
-import com.dendrrahsrage.Player
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
-import com.jme3.bullet.collision.shapes.CollisionShape
-import com.jme3.bullet.control.GhostControl
 import com.jme3.scene.Node
 import com.jme3.texture.Texture
 
@@ -18,13 +14,13 @@ abstract class WeaponItem(
 ) : Item(name, model, icon, weight) {
 
     override fun contextMenuItems(
-        player: Player,
+        player: EntityPlayer,
         inventoryView: InventoryView
     ): List<ContextMenuAction> =
         listOf(
             ContextMenuAction("Equip") {
-                player.getPlayerControl().inventory.removeItem(this)
-                player.getPlayerControl().equip(this)
+                player.betterPlayerControl.inventory.removeItem(this)
+                player.betterPlayerControl.equip(this)
             }
         ) + super.contextMenuItems(player, inventoryView)
 

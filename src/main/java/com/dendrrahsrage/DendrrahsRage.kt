@@ -37,7 +37,7 @@ class DendrrahsRage : SimpleApplication() {
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass")
 
         getStateManager().attach(
-            LoadingAppState(assetManager, camera) { appstate, data ->
+            LoadingAppState(this) { appstate, data ->
                 getStateManager().detach(appstate)
                 getStateManager().attach(DefaultAppState(this, data))
                 getStateManager().attach(PlayerMovementAppState(this, data.player))

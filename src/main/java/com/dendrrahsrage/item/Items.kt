@@ -12,6 +12,12 @@ class Items {
         1f,
         60f
     )
+    class MeatRaw(assetManager: AssetManager) : Item(
+        "Raw Meat",
+        assetManager.loadModel("Models/Kenney/Food/meat-raw.glb") as Node,
+        assetManager.loadTexture("Textures/item-missing.png"),
+        1f,
+    )
     class Cake(assetManager: AssetManager) : FoodItem(
         "Cake",
         assetManager.loadModel("Models/Kenney/Food/cake.glb") as Node,
@@ -32,6 +38,13 @@ class Items {
         assetManager.loadTexture("Textures/Kenney/Food/item-leek.png"),
         0.8f,
         10f
+    )
+
+    class GreatSword(assetManager: AssetManager) : GreatSwordItem(
+        "Great Sword",
+        assetManager.loadModel("Models/GreatSword.glb") as Node,
+        assetManager.loadTexture("Textures/item-missing.png"),
+        20f
     )
 
 }

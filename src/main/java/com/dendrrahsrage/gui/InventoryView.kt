@@ -1,11 +1,10 @@
 package com.dendrrahsrage.gui
 
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.gui.contextmenu.ContextMenu
 import com.dendrrahsrage.gui.layout.FlowLayout
 import com.dendrrahsrage.item.Inventory
 import com.dendrrahsrage.item.Item
-import com.google.common.base.Function
 import com.jme3.input.InputManager
 import com.jme3.light.DirectionalLight
 import com.jme3.math.ColorRGBA
@@ -16,13 +15,10 @@ import com.simsilica.lemur.component.BorderLayout.Position
 import com.simsilica.lemur.component.QuadBackgroundComponent
 import com.simsilica.lemur.core.GuiControl
 import com.simsilica.lemur.core.VersionedReference
-import com.simsilica.lemur.list.CellRenderer
-import com.simsilica.lemur.list.DefaultCellRenderer
-import com.simsilica.lemur.style.ElementId
 
 class InventoryView(
     private val inputManager: InputManager,
-    private val betterPlayerControl: BetterPlayerControl,
+    private val player: EntityPlayer,
     private val inventory: Inventory,
 ): Container(BorderLayout()) {
 
@@ -53,7 +49,7 @@ class InventoryView(
                 addClickCommands {
                     contextMenu?.removeFromParent()
                     contextMenu = ContextMenu(
-                        item.contextMenuItems(betterPlayerControl, this@InventoryView)
+                        item.contextMenuItems(player, this@InventoryView)
                     )
                     this@InventoryView.parent.attachChild(contextMenu)
                     val mouse = inputManager.cursorPosition

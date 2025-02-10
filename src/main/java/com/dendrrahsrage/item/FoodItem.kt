@@ -1,11 +1,8 @@
 package com.dendrrahsrage.item
 
-import com.dendrrahsrage.control.BetterPlayerControl
-import com.dendrrahsrage.control.FoodControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
-import com.jme3.bullet.PhysicsSpace
-import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.scene.Node
 import com.jme3.texture.Texture
 
@@ -17,12 +14,12 @@ open class FoodItem(
     val nutrition: Float
 ) : Item(name, model, icon, weight) {
 
-    override fun contextMenuItems(betterPlayerControl: BetterPlayerControl, inventoryView: InventoryView) =
+    override fun contextMenuItems(player: EntityPlayer, inventoryView: InventoryView) =
         listOf(
             ContextMenuAction("Eat") {
-                betterPlayerControl.inventory.removeItem(this)
-                betterPlayerControl.hunger += nutrition
+                player.betterPlayerControl.inventory.removeItem(this)
+                player.betterPlayerControl.hunger += nutrition
             }
-        ) + super.contextMenuItems(betterPlayerControl, inventoryView)
+        ) + super.contextMenuItems(player, inventoryView)
 
 }

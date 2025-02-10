@@ -1,6 +1,6 @@
 package com.dendrrahsrage.item
 
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
@@ -16,11 +16,11 @@ open class Item(
     val weight: Float,
 ) {
 
-    open fun contextMenuItems(betterPlayerControl: BetterPlayerControl, inventoryView: InventoryView) = listOf(
+    open fun contextMenuItems(player: EntityPlayer, inventoryView: InventoryView) = listOf(
         ContextMenuAction("Drop") {
-            betterPlayerControl.inventory.removeItem(this)
-            spawnItem(betterPlayerControl.characterNode.parent, betterPlayerControl.physicsSpace).apply {
-                this.getControl(RigidBodyControl::class.java).physicsLocation = betterPlayerControl.characterNode.worldTranslation
+            player.betterPlayerControl.inventory.removeItem(this)
+            spawnItem(player.parent, player.betterPlayerControl.physicsSpace).apply {
+                this.getControl(RigidBodyControl::class.java).physicsLocation = player.worldTranslation
             }
         }
     )

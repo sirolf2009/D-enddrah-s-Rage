@@ -82,7 +82,9 @@ class TerrainPit(
         val control: TerrainLodControl = TerrainLodControl(this, DendrrahsRage.instance!!.camera)
         control.setLodCalculator(DistanceLodCalculator(patchSize, 2.7f)) // patch size, and a multiplier
         addControl(control)
+    }
 
+    fun spawnTrees() {
         val width = totalSize
         val height = totalSize
         val x = (Random.nextFloat() * width) - (width/2)
@@ -93,7 +95,6 @@ class TerrainPit(
             attachChild(tree)
         }
     }
-
 
     companion object {
 

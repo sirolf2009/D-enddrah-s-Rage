@@ -21,12 +21,9 @@ import com.simsilica.lemur.GuiGlobals
 class BetterWASDMovement(
     private val player: EntityPlayer,
     private val sceneNode: Node,
-    private val guiNode: Node,
     private val application: DendrrahsRage,
     private val inputManager: InputManager
 ): ActionListener, AnalogListener {
-
-    var inventoryView: InventoryView? = null
 
     fun setupKeys() {
         inputManager.addMapping("Strafe Left",
@@ -56,12 +53,11 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_RSHIFT))
         inputManager.addMapping("Pickup", KeyTrigger(KeyInput.KEY_E))
         inputManager.addMapping("Attack", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
-        inputManager.addMapping("Inventory", KeyTrigger(KeyInput.KEY_TAB))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
-        inputManager.addListener(this, "Pickup", "Inventory", "Attack")
+        inputManager.addListener(this, "Pickup", "Attack")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -120,20 +116,6 @@ class BetterWASDMovement(
                         }
                     }
                 }
-            }
-        } else if(binding.equals("Inventory") && !value) {
-            if(inventoryView == null) {
-                inventoryView = InventoryView(inputManager, player, player.betterPlayerControl.inventory)
-                inventoryView!!.setLocalTranslation(20f, 700f, 0f)
-                guiNode.attachChild(inventoryView)
-                application.mouseCapture = false
-                GuiGlobals.getInstance().isCursorEventsEnabled = true
-            } else {
-                inventoryView!!.cleanup()
-                guiNode.detachChild(inventoryView)
-                inventoryView = null
-                application.mouseCapture = true
-                GuiGlobals.getInstance().isCursorEventsEnabled = false
             }
         } else if(binding.equals("Attack") && !value) {
             player.betterPlayerControl.attack()

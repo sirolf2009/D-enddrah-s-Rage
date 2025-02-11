@@ -2,6 +2,7 @@ package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.actionlistener.BetterWASDMovement
+import com.dendrrahsrage.actionlistener.ManagementScreens
 import com.dendrrahsrage.entity.EntityPlayer
 import com.jme3.app.state.AbstractAppState
 import com.jme3.app.state.AppStateManager
@@ -19,7 +20,8 @@ class PlayerMovementAppState(
         player.camNode.isEnabled = true
         application.inputManager.isCursorVisible = false
 
-        BetterWASDMovement(player, application.rootNode, application.guiNode, application, application.inputManager).setupKeys()
+        BetterWASDMovement(player, application.rootNode, application, application.inputManager).setupKeys()
+        ManagementScreens(application, player, application.guiNode).setupKeys()
 
         initCrossHairs()
     }

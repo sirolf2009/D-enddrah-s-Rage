@@ -54,9 +54,15 @@ class EntityPlayer(
 
         betterPlayerControl.inventory.addItem(Items.Burger(assetManager))
         betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
-        betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
-        betterPlayerControl.inventory.addItem(Items.Leek(assetManager))
         betterPlayerControl.inventory.addItem(Items.Cake(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Log(assetManager))
         betterPlayerControl.inventory.addItem(Items.GreatSword(assetManager))
     }
 

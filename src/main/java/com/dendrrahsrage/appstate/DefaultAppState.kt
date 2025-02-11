@@ -57,7 +57,7 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
-        isDebugEnabled = true
+        isDebugEnabled = false
 
         val cow = EntityCow(
             loadedData.terrain,

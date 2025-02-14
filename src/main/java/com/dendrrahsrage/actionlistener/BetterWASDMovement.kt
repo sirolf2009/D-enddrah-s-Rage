@@ -3,6 +3,7 @@ package com.dendrrahsrage.actionlistener
 import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.control.FoodControl
+import com.dendrrahsrage.control.player.PlaceItem
 import com.dendrrahsrage.gui.InventoryView
 import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.collision.CollisionResults
@@ -52,12 +53,12 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_LSHIFT),
             KeyTrigger(KeyInput.KEY_RSHIFT))
         inputManager.addMapping("Pickup", KeyTrigger(KeyInput.KEY_E))
-        inputManager.addMapping("Attack", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
+        inputManager.addMapping("Action", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
-        inputManager.addListener(this, "Pickup", "Attack")
+        inputManager.addListener(this, "Pickup", "Action")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -117,8 +118,12 @@ class BetterWASDMovement(
                     }
                 }
             }
-        } else if(binding.equals("Attack") && !value) {
-            player.betterPlayerControl.attack()
+        } else if(binding.equals("Action") && !value) {
+            if(player.betterPlayerControl.action != null) {
+                player.betterPlayerControl.action!!.actionExecute()
+            } else {
+                player.betterPlayerControl.attack()
+            }
         }
     }
 

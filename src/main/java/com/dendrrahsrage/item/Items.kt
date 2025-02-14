@@ -24,7 +24,7 @@ class Items {
         assetManager.loadTexture("Textures/item-log.png"),
         5f,
     )
-    class Campfire(assetManager: AssetManager) : Item(
+    class Campfire(assetManager: AssetManager) : PlaceableItem(
         "Campfire",
         assetManager.loadModel("Models/campfire.glb") as Node,
         assetManager.loadTexture("Textures/item-campfire.png"),

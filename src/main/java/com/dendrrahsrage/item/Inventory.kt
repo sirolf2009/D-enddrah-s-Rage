@@ -14,9 +14,6 @@ class Inventory(
     }
 
     fun addItem(item: Item): Boolean {
-        if(currentWeight + item.weight > maxWeight) {
-            return false
-        }
         currentWeight += item.weight
         return items.add(item)
     }

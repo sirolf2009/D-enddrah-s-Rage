@@ -1,6 +1,6 @@
 package com.dendrrahsrage.entity
 
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.control.player.BetterPlayerControl
 import com.dendrrahsrage.control.CurseControl
 import com.dendrrahsrage.item.Items
 import com.jme3.anim.AnimComposer
@@ -8,7 +8,6 @@ import com.jme3.anim.ArmatureMask
 import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.asset.AssetManager
-import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
 import com.jme3.scene.CameraNode
@@ -63,6 +62,7 @@ class EntityPlayer(
         betterPlayerControl.inventory.addItem(Items.Log(assetManager))
         betterPlayerControl.inventory.addItem(Items.Log(assetManager))
         betterPlayerControl.inventory.addItem(Items.Log(assetManager))
+        betterPlayerControl.inventory.addItem(Items.Campfire(assetManager))
         betterPlayerControl.inventory.addItem(Items.GreatSword(assetManager))
     }
 

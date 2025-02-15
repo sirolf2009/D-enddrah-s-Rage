@@ -5,7 +5,7 @@
 package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.control.BetterPlayerControl
+import com.dendrrahsrage.control.player.BetterPlayerControl
 import com.dendrrahsrage.control.*
 import com.dendrrahsrage.entity.EntityCow
 import com.dendrrahsrage.gui.hud.HUD
@@ -57,7 +57,7 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
-        isDebugEnabled = true
+        isDebugEnabled = false
 
         val cow = EntityCow(
             loadedData.terrain,

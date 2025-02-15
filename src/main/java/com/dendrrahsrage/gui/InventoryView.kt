@@ -27,11 +27,6 @@ class InventoryView(
     lateinit var inventoryRef: VersionedReference<List<Item>>
 
     init {
-        val dl = DirectionalLight()
-        dl.color = ColorRGBA.White
-        dl.direction = Vector3f(0f, 0f, 1f)
-        addLight(dl)
-
         addChild(Label("Inventory"), Position.North)
         itemList = Container(FlowLayout())
         fillInventoryView()

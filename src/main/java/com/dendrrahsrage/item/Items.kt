@@ -18,6 +18,18 @@ class Items {
         assetManager.loadTexture("Textures/item-missing.png"),
         1f,
     )
+    class Log(assetManager: AssetManager) : Item(
+        "Log",
+        assetManager.loadModel("Models/log.glb") as Node,
+        assetManager.loadTexture("Textures/item-log.png"),
+        5f,
+    )
+    class Campfire(assetManager: AssetManager) : PlaceableItem(
+        "Campfire",
+        assetManager.loadModel("Models/campfire.glb") as Node,
+        assetManager.loadTexture("Textures/item-campfire.png"),
+        5f*6,
+    )
     class Cake(assetManager: AssetManager) : FoodItem(
         "Cake",
         assetManager.loadModel("Models/Kenney/Food/cake.glb") as Node,

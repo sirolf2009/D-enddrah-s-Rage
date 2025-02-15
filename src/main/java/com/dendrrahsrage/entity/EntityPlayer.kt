@@ -1,5 +1,6 @@
 package com.dendrrahsrage.entity
 
+import com.dendrrahsrage.World
 import com.dendrrahsrage.control.player.BetterPlayerControl
 import com.dendrrahsrage.control.CurseControl
 import com.dendrrahsrage.item.Items
@@ -8,6 +9,7 @@ import com.jme3.anim.ArmatureMask
 import com.jme3.anim.SkinningControl
 import com.jme3.anim.tween.action.ClipAction
 import com.jme3.asset.AssetManager
+import com.jme3.bullet.PhysicsSpace
 import com.jme3.math.Vector3f
 import com.jme3.renderer.Camera
 import com.jme3.scene.CameraNode
@@ -26,6 +28,8 @@ class EntityPlayer(
     val camNode: CameraNode
     val betterPlayerControl: BetterPlayerControl
     val skinningControl: SkinningControl
+
+    var world: World? = null
 
     init {
         model = assetManager.loadModel("Models/character.glb") as Node

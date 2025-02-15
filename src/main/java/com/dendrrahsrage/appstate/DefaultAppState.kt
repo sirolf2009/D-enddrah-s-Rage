@@ -5,6 +5,7 @@
 package com.dendrrahsrage.appstate
 
 import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.World
 import com.dendrrahsrage.control.player.BetterPlayerControl
 import com.dendrrahsrage.control.*
 import com.dendrrahsrage.entity.EntityCow
@@ -25,7 +26,8 @@ class DefaultAppState(
     val loadedData: LoadingAppState.LoadedData
 ) : BulletAppState() {
     private val stateNode: Node
-    private var betterPlayerControl: BetterPlayerControl? = null
+    private lateinit var betterPlayerControl: BetterPlayerControl
+    private lateinit var world: World
     private var hud: HUD? = null
     var mouseCapture = true
 
@@ -53,6 +55,9 @@ class DefaultAppState(
 
         loadedData.terrain.addControl(GrowPlantsControl(GrowPlantsControl.defaultPlants(application.assetManager), physicsSpace))
 
+        world = World(application, loadedData.terrain, physicsSpace, stateNode)
+        world.spawnTrees()
+
         setupBetterPlayer()
 
         hud = HUD(application, application.getGuiNode(), loadedData.player)
@@ -76,6 +81,7 @@ class DefaultAppState(
 
         loadedData.player.setLocationOnTerrain(200f, 200f)
         loadedData.player.betterPlayerControl.equip(Items.GreatSword(application.assetManager))
+        loadedData.player.world = world
     }
 
     private fun setUpLight() {
@@ -98,7 +104,7 @@ class DefaultAppState(
     override fun update(tpf: Float) {
         super.update(tpf)
 //        player!!.update(tpf)
-        betterPlayerControl?.update(tpf)
+        //betterPlayerControl?.update(tpf)
         hud?.update()
 
         application.inputManager.isCursorVisible = !mouseCapture

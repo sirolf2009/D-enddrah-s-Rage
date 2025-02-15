@@ -1,21 +1,15 @@
 package com.dendrrahsrage.terrain
 
 import com.dendrrahsrage.DendrrahsRage
-import com.dendrrahsrage.control.GrowPlantsControl
-import com.dendrrahsrage.entity.Tree
 import com.dendrrahsrage.jnoiseterrain.JNoiseHeightMap
 import com.jme3.asset.AssetManager
-import com.jme3.bounding.BoundingBox
 import com.jme3.bullet.control.RigidBodyControl
 import com.jme3.material.Material
-import com.jme3.math.Vector2f
-import com.jme3.math.Vector3f
 import com.jme3.terrain.geomipmap.TerrainLodControl
 import com.jme3.terrain.geomipmap.TerrainQuad
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator
 import com.jme3.texture.Texture
 import com.jme3.texture.Texture.WrapMode
-import kotlin.random.Random
 
 class TerrainPit(
     val assetManager: AssetManager,
@@ -71,31 +65,17 @@ class TerrainPit(
          * 3.5) We supply the prepared heightmap itself.
          */
 
+        /** 5. The LOD (level of detail) depends on were the camera is:  */
+        val control: TerrainLodControl = TerrainLodControl(this, DendrrahsRage.instance!!.camera)
+        control.setLodCalculator(DistanceLodCalculator(patchSize, 2.7f)) // patch size, and a multiplier
+        addControl(control)
+
         /** 4. We give the terrain its material, position & scale it, and attach it.  */
         setMaterial(mat_terrain)
         //terrain.setLocalTranslation(40f, -50f, 0f)
         setLocalScale(4f, 4f, 4f)
 
         addControl(RigidBodyControl(0f))
-
-        /** 5. The LOD (level of detail) depends on were the camera is:  */
-        val control: TerrainLodControl = TerrainLodControl(this, DendrrahsRage.instance!!.camera)
-        control.setLodCalculator(DistanceLodCalculator(patchSize, 2.7f)) // patch size, and a multiplier
-        addControl(control)
-
-        spawnTrees()
-    }
-
-    fun spawnTrees() {
-        val width = totalSize
-        val height = totalSize
-        (0..100).forEach {
-            val x = (Random.nextFloat() * width) - (width/2)
-            val z = (Random.nextFloat() * height) - (height/2)
-            val tree = Tree(assetManager, this)
-            tree.setLocationOnTerrain(x, z, -1f)
-            attachChild(tree)
-        }
     }
 
     companion object {

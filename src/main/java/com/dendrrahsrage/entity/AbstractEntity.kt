@@ -11,9 +11,9 @@ abstract class AbstractEntity(
     val terrain: TerrainQuad,
 ) : Node(nodeName) {
 
-    fun setLocationOnTerrain(x: Float, z: Float) {
+    fun setLocationOnTerrain(x: Float, z: Float, yOffset: Float = 1f) {
         setLocalTranslation(x, terrain.getHeight(Vector2f(x, z)) + 1, z)
-        getRigidBody().physicsLocation = Vector3f(x, terrain.getHeight(Vector2f(x, z)) + 1, z)
+        getRigidBody().physicsLocation = Vector3f(x, terrain.getHeight(Vector2f(x, z)) + yOffset, z)
     }
 
     abstract fun getRigidBody(): PhysicsRigidBody

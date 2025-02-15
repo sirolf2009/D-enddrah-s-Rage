@@ -8,6 +8,7 @@ import com.dendrrahsrage.DendrrahsRage
 import com.dendrrahsrage.control.player.BetterPlayerControl
 import com.dendrrahsrage.control.*
 import com.dendrrahsrage.entity.EntityCow
+import com.dendrrahsrage.entity.Tree
 import com.dendrrahsrage.gui.hud.HUD
 import com.dendrrahsrage.item.Items
 import com.jme3.app.Application
@@ -48,6 +49,7 @@ class DefaultAppState(
 
         stateNode.attachChild(loadedData.terrain)
         physicsSpace.add(loadedData.terrain)
+        loadedData.terrain.children.filter { it is Tree }.forEach { physicsSpace.add(it) }
 
         loadedData.terrain.addControl(GrowPlantsControl(GrowPlantsControl.defaultPlants(application.assetManager), physicsSpace))
 
@@ -57,7 +59,7 @@ class DefaultAppState(
 
         application.rootNode.attachChild(stateNode)
 
-        isDebugEnabled = false
+        isDebugEnabled = true
 
         val cow = EntityCow(
             loadedData.terrain,

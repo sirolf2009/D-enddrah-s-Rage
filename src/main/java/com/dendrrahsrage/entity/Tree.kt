@@ -1,21 +1,23 @@
 package com.dendrrahsrage.entity
 
-import com.jme3.asset.AssetManager
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape
 import com.jme3.bullet.control.RigidBodyControl
-import com.jme3.bullet.objects.PhysicsRigidBody
+import com.jme3.scene.Spatial
 import com.jme3.terrain.geomipmap.TerrainQuad
 
 class Tree(
-    val assetManager: AssetManager,
+    spatial: Spatial,
     terrain: TerrainQuad
 ) : AbstractEntity("Tree", terrain) {
 
     val rigidBodyControl: RigidBodyControl
 
     init {
-        val model = assetManager.loadModel("Models/tree-lowpoly-swap.blend")
-        attachChild(model)
-        rigidBodyControl = RigidBodyControl(0f).also { addControl(it) }
+        attachChild(spatial)
+        rigidBodyControl = RigidBodyControl(
+            CapsuleCollisionShape(2f, 6f),
+            0f
+        ).also { addControl(it) }
     }
 
     override fun getRigidBody() = rigidBodyControl

@@ -26,7 +26,7 @@ open class PlaceableItem(
                     player.betterPlayerControl.action = PlaceItem(
                         item = this,
                         player = player,
-                        worldNode = player.parent
+                        worldNode = player.parent,
                     )
                 }
             }

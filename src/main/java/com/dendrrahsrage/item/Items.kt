@@ -1,5 +1,6 @@
 package com.dendrrahsrage.item
 
+import com.dendrrahsrage.building.Campfire
 import com.jme3.asset.AssetManager
 import com.jme3.scene.Node
 
@@ -26,7 +27,7 @@ class Items {
     )
     class Campfire(assetManager: AssetManager) : PlaceableItem(
         "Campfire",
-        assetManager.loadModel("Models/campfire.glb") as Node,
+        com.dendrrahsrage.building.Campfire(assetManager),
         assetManager.loadTexture("Textures/item-campfire.png"),
         5f*6,
     )

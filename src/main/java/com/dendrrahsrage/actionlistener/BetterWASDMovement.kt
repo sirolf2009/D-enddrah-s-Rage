@@ -1,8 +1,8 @@
 package com.dendrrahsrage.actionlistener
 
 import com.dendrrahsrage.DendrrahsRage
+import com.dendrrahsrage.Interactable
 import com.dendrrahsrage.entity.EntityPlayer
-import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.control.player.PlaceItem
 import com.dendrrahsrage.gui.InventoryView
 import com.jme3.bullet.control.RigidBodyControl
@@ -52,13 +52,13 @@ class BetterWASDMovement(
             KeyTrigger(KeyInput.KEY_G),
             KeyTrigger(KeyInput.KEY_LSHIFT),
             KeyTrigger(KeyInput.KEY_RSHIFT))
-        inputManager.addMapping("Pickup", KeyTrigger(KeyInput.KEY_E))
+        inputManager.addMapping("Interact", KeyTrigger(KeyInput.KEY_E))
         inputManager.addMapping("Action", MouseButtonTrigger(MouseInput.BUTTON_LEFT))
         inputManager.addListener(this, "Strafe Left", "Strafe Right")
         inputManager.addListener(this, "Rotate Left", "Rotate Right")
         inputManager.addListener(this, "Walk Forward", "Walk Backward")
         inputManager.addListener(this, "Jump", "Duck")
-        inputManager.addListener(this, "Pickup", "Action")
+        inputManager.addListener(this, "Interact", "Action")
 
         // both mouse and button - rotation of cam
         inputManager.addMapping(
@@ -100,7 +100,7 @@ class BetterWASDMovement(
             } else {
                 player.betterPlayerControl.isDucked = false
             }
-        } else if (binding.equals("Pickup") && !value) {
+        } else if (binding.equals("Interact") && !value) {
             val results = CollisionResults()
             val ray = Ray(player.camNode.camera.getLocation(), player.camNode.camera.getDirection())
             sceneNode.collideWith(ray, results)
@@ -108,14 +108,7 @@ class BetterWASDMovement(
             if (results.size() > 0) {
                 val closest = results.closestCollision
                 if(closest.distance < 15f) {
-                    foodItem(closest.geometry.parent)?.let {
-                        val rigidBodyControl = it.getControl(RigidBodyControl::class.java)
-                        val item = it.getControl(FoodControl::class.java).item
-                        if(player.betterPlayerControl.inventory.addItem(item)) {
-                            it.parent.detachChild(it)
-                            rigidBodyControl.physicsSpace.remove(rigidBodyControl)
-                        }
-                    }
+                    interactable(closest.geometry.parent)?.interact(player)
                 }
             }
         } else if(binding.equals("Action") && !value) {
@@ -127,12 +120,12 @@ class BetterWASDMovement(
         }
     }
 
-    fun foodItem(node: Node): Node? {
-        if(node.getControl(FoodControl::class.java) != null) {
+    fun interactable(node: Node): Interactable? {
+        if(node is Interactable) {
             return node
         }
         if(node.parent != null) {
-            return foodItem(node.parent)
+            return interactable(node.parent)
         }
         return null
     }

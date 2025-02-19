@@ -36,7 +36,7 @@ class FlowLayout(
         for (child in children) {
             val childSize = (child as? Panel)?.preferredSize ?: Vector3f.ZERO
             if (currentRowWidth + childSize.x > size.x) { // create new row
-                currentRowStartY += currentRowHeight
+                currentRowStartY -= currentRowHeight
                 currentRowHeight = 0f
                 currentRowWidth = 0f
             }

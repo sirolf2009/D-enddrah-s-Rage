@@ -1,7 +1,6 @@
 package com.dendrrahsrage.item
 
 import com.dendrrahsrage.entity.EntityPlayer
-import com.dendrrahsrage.control.FoodControl
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
 import com.jme3.bullet.PhysicsSpace
@@ -28,11 +27,8 @@ open class Item(
         }
     )
 
-    fun spawnItem(node: Node, physicsSpace: PhysicsSpace): Node {
-        val itemNode = Node(name)
-        itemNode.attachChild(model)
-        itemNode.addControl(RigidBodyControl(weight))
-        itemNode.addControl(FoodControl(this))
+    open fun spawnItem(node: Node, physicsSpace: PhysicsSpace): Node {
+        val itemNode = ItemNode(this)
         node.attachChild(itemNode)
         physicsSpace.add(itemNode)
         return itemNode

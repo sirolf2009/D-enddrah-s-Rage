@@ -4,7 +4,10 @@
  */
 package com.dendrrahsrage.control
 
+import com.dendrrahsrage.Interactable
+import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.item.FoodItem
+import com.dendrrahsrage.item.ItemNode
 import com.dendrrahsrage.item.Items
 import com.jme3.asset.AssetManager
 import com.jme3.bounding.BoundingBox
@@ -33,15 +36,14 @@ class GrowPlantsControl(
             grow()
         }
         if(!hasInitialized) {
-            (0 ..< 750).forEach { grow() }
+            (0 ..< 1000).forEach { _ -> grow() }
             hasInitialized = true
         }
     }
 
     fun grow() {
         val plant = plants[Random.nextInt(plants.size)].get()
-        val plantNode = Node(plant.name)
-        plantNode.attachChild(plant.model)
+        val plantNode = ItemNode(plant, rigidBodyControl = RigidBodyControl(0f))
 
         val terrain = (spatial as TerrainQuad)
         val bb = (terrain.worldBound as BoundingBox)
@@ -51,8 +53,7 @@ class GrowPlantsControl(
         val z = (Random.nextFloat() * height) - bb.zExtent
         val terrainHeight = terrain.getHeight(Vector2f(x, z))
         plantNode.setLocalTranslation(Vector3f(x, terrainHeight, z))
-        plantNode.addControl(FoodControl(plant))
-        plantNode.addControl(RigidBodyControl(0f))
+        plantNode.rigidBodyControl.physicsLocation = Vector3f(x, terrainHeight, z)
         terrain.parent.attachChild(plantNode)
         physicsSpace.add(plantNode)
     }

@@ -3,6 +3,7 @@ package com.dendrrahsrage.item
 import com.dendrrahsrage.entity.EntityPlayer
 import com.dendrrahsrage.gui.InventoryView
 import com.dendrrahsrage.gui.contextmenu.ContextMenuAction
+import com.jme3.bullet.PhysicsSpace
 import com.jme3.scene.Node
 import com.jme3.texture.Texture
 
